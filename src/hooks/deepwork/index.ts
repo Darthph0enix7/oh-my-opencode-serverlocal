@@ -52,7 +52,6 @@ export function createDeepworkCommandHook(): {
         return;
       }
 
-      // Parse tier if provided (e.g., "tier 2 build a feature")
       let tier = "Tier 1: Guided / Supervised Mode";
       let task = rawArgs;
 
