@@ -78,17 +78,17 @@ const AGENT_DESCRIPTIONS: Record<string, string> = {
 - **Don't delegate when:** Needs discovery/research/decisions • Single small change (<20 lines, one file) • Unclear requirements needing iteration • Explaining to fixer > doing • Tight integration with your current work • Requires design taste, visual hierarchy, interaction polish, responsive layout decisions, animation/motion, component feel, or UI copy/design trade-offs
 - **Rule of thumb:** Headless/mechanical implementation → @fixer. User-visible design or polish → @designer. If @designer already set direction, @fixer may only do bounded mechanical follow-up that preserves that design exactly.`,
 
-  council: `@council
-- Lane: High-stakes multi-model decision support
-- Role: Multi-LLM consensus engine that runs several councillors, synthesizes their views, and returns a structured council report.
-- Permissions: Read files
-- Stats: 3x slower than orchestrator, 3x or more cost of orchestrator
-- Capabilities: Runs multiple models in parallel, compares their answers, resolves disagreements, and produces a final synthesized answer plus councillor details and consensus summary.
-- **Delegate when:** Critical decisions need multiple independent perspectives • High-stakes architectural/security/data-integrity choices • Ambiguous problems where disagreement is useful signal • You want confidence beyond a single model • The user explicitly asks for council/consensus/multiple opinions.
-- **Don't delegate when:** Straightforward tasks you're confident about • Speed matters more than confidence • Routine implementation/debugging • A single specialist is clearly the right tool • You only need current docs/search/code review rather than multi-model consensus.
-- **How to call:** Send the full question/task and relevant context. Be explicit about what decision, trade-off, or answer the council should resolve. Do not ask council to do routine code edits.
-- **Result handling:** Council returns a structured response that may include: synthesized Council Response, individual Councillor Details, and Council Summary/confidence. Preserve that structure when the user asked for council output. Do not pretend the council only returned a final answer. If you need to act on the council result, first briefly state the council's recommendation, then proceed.
-- **Rule of thumb:** Need second/third opinions from different models? → @council. Need one expert lane? → use the specialist. Need final synthesis? → handle directly.`,
+  roundtable: `roundtable tool
+- Lane: Multi-model adversarial debate with consensus scoring
+- Role: Launches a structured round-table debate with 3 independent debaters (skeptic, pragmatist, architect) and a critic. Runs multiple rounds of cross-examination. Debunkers see each other's arguments and must explicitly address weaknesses. Critic scores consensus and quality after each round. Returns a 5-section council report with dissents, debate summary, and open questions.
+- Permissions: Read files (runs independently — no user interaction)
+- Stats: 1-5 rounds, 60-260s, tokens cost roughly proportional to rounds
+- Capabilities: Real cross-examination (not parallel/parallel synthesis), consensus-based early stop, divergence detection, quality threshold gating. Produces honest dissent section.
+- **Delegate when:** Critical architectural decisions • Tech stack trade-offs • Security/safety decisions • Cost analysis of changes • "Should I use X or Y?" questions • Migrations or deprecations • Designers vs Engineers conflicts
+- **Don't delegate when:** Simple yes/no answers • Features where speed > thoroughness • Single opinion is obvious • Routine code edits
+- **How to call:** Call the \`roundtable\` tool with \`{ query: "Specific question with enough context", maxRounds: optional, debug: optional }\`. Provide real constraints (e.g., hardware specs, budget, current tech stack). The more context, the better the debate.
+- **Result handling:** The tool returns a structured report with Council Decision (verdict), Dissent (where disagreement persisted), Debate Summary (rounds, scores), Open Questions, and Models Used. Present all 5 sections unless the user asked for a summary. If the dissent is strong, note it explicitly.
+- **Rule of thumb:** Need independent perspectives that actually challenge each other? → roundtable tool. Need one confidence estimate? → ask @oracle. Need to quickly ship? → make the call yourself.`,
 
   observer: `@observer
 - Lane: Visual/media analysis isolated from orchestrator context
