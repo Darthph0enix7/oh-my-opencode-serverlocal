@@ -1,7 +1,7 @@
 {
-  "name": "oh-my-opencode-slim",
-  "version": "2.2.2",
-  "description": "Lightweight agent orchestration plugin for OpenCode - a slimmed-down fork of oh-my-opencode",
+  "name": "oh-my-opencode-serverlocal",
+  "version": "0.1.0",
+  "description": "Custom serverlocal fork of oh-my-opencode-slim — fully owned, custom prompts + commands, dist synced via opencode-dotfiles",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -15,7 +15,7 @@
     }
   },
   "bin": {
-    "oh-my-opencode-slim": "./dist/cli/index.js"
+    "oh-my-opencode-serverlocal": "./dist/cli/index.js"
   },
   "type": "module",
   "license": "MIT",
@@ -25,19 +25,20 @@
     "ai",
     "agents",
     "orchestration",
-    "llm",
+    "serverlocal",
+    "fork",
     "claude",
     "gpt",
     "gemini"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/alvinunreal/oh-my-opencode-slim"
+    "url": "https://github.com/Darthph0enix7/oh-my-opencode-serverlocal"
   },
   "bugs": {
-    "url": "https://github.com/alvinunreal/oh-my-opencode-slim/issues"
+    "url": "https://github.com/Darthph0enix7/oh-my-opencode-serverlocal/issues"
   },
-  "homepage": "https://github.com/alvinunreal/oh-my-opencode-slim#readme",
+  "homepage": "https://github.com/Darthph0enix7/oh-my-opencode-serverlocal#readme",
   "files": [
     "dist",
     "src/companion/companion-manifest.json",
