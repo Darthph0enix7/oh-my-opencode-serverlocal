@@ -27,7 +27,6 @@ import {
   createApplyPatchHook,
   createAutoUpdateCheckerHook,
   createChatHeadersHook,
-  createDeepworkCommandHook,
   createDelegateTaskRetryHook,
   createFilterAvailableSkillsHook,
   createJsonErrorRecoveryHook,
@@ -36,6 +35,7 @@ import {
   createPostFileToolNudgeHook,
   createReflectCommandHook,
   createTaskSessionManagerHook,
+  createTierCommandsHook,
   ForegroundFallbackManager,
   SessionLifecycle,
 } from './hooks';
@@ -152,7 +152,8 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
 
   let chatHeadersHook: ReturnType<typeof createChatHeadersHook>;
   let foregroundFallback: ForegroundFallbackManager;
-  let deepworkCommandHook: ReturnType<typeof createDeepworkCommandHook>;
+  let applyPatchHook: ReturnType<typeof createApplyPatchHook>;
+  let tierCommandsHook: ReturnType<typeof createTierCommandsHook>;
   let reflectCommandHook: ReturnType<typeof createReflectCommandHook>;
   let loopCommandHook: ReturnType<typeof createLoopCommandHook>;
   let taskSessionManagerHook: ReturnType<typeof createTaskSessionManagerHook>;
@@ -313,7 +314,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       sessionLifecycle,
     );
 
-    deepworkCommandHook = createDeepworkCommandHook();
+    tierCommandsHook = createTierCommandsHook();
     reflectCommandHook = createReflectCommandHook();
     loopCommandHook = createLoopCommandHook();
     taskSessionManagerHook = createTaskSessionManagerHook(ctx, {
@@ -858,7 +859,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       }
 
       interviewManager.registerCommand(opencodeConfig);
-      deepworkCommandHook.registerCommand(opencodeConfig);
+      tierCommandsHook.registerCommand(opencodeConfig);
       reflectCommandHook.registerCommand(opencodeConfig);
       loopCommandHook.registerCommand(opencodeConfig);
       presetManager.registerCommand(opencodeConfig);
@@ -1041,7 +1042,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         output as { parts: Array<{ type: string; text?: string }> },
       );
 
-      await deepworkCommandHook.handleCommandExecuteBefore(
+      await tierCommandsHook.handleCommandExecuteBefore(
         input as {
           command: string;
           sessionID: string;

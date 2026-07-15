@@ -36,13 +36,6 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
     sourcePath: 'src/skills/clonedeps',
   },
   {
-    name: 'deepwork',
-    description:
-      'Heavy/complex coding sessions and large modifications workflow',
-    allowedAgents: ['orchestrator'],
-    sourcePath: 'src/skills/deepwork',
-  },
-  {
     name: 'verification-planning',
     description:
       'Plan credible, proportionate evidence before non-trivial implementation',
