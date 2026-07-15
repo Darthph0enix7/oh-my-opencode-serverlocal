@@ -1,64 +1,45 @@
 import { createInternalAgentTextPart } from '../../utils';
 import { registerCommandHook } from '../command-hook-utils';
 
-const COMMON_REQUIREMENTS = `
-State Management Requirements:
-- Before planning or creating state, inspect \`.gitignore\` and \`.ignore\`. Add missing entries: \`.gitignore\` must contain \`.slim/tier_state/\`, and \`.ignore\` must contain \`!.slim/tier_state/\` and \`!.slim/tier_state/**\`.
-- Create and maintain a progress file at \`.slim/tier_state/progress.md\`.
-- Keep OpenCode todos synced with the current phase.
-- Execute phase by phase. Wait for hook-driven background completion, reconcile results, and fix actionable review issues before continuing.`;
-
-function getTierPrompt(tier: number, task: string): string {
+function activationPrompt(tier: number, task: string): string {
   let tierRules = '';
 
-  switch (tier) {
-    case 0:
-      tierRules = `**Tier 0: Basic Mode**
-Focus: Fast, direct implementation. Low cooperation overhead.
-Rules:
-1. You (Orchestrator) do the main implementation work.
-2. High threshold for asking for review. No mandatory @oracle review.
-3. Use @explorer and @librarian freely for basic context.
-4. If parallel simple implementation is needed, offload to @fixer.
-5. If visual design is needed, call @designer. If vision extraction is needed, call @observer.`;
-      break;
-    case 1:
-      tierRules = `**Tier 1: Guided / Supervised Mode**
-Focus: Quality and correctness over pure speed.
+  if (tier === 1) {
+    tierRules = `**Tier 1: Basic Collaboration**
+Focus: Quality assurance through basic supervision.
 Rules:
 1. You must plan the work first.
-2. MANDATORY: Call @oracle to review your plan (logic, edge cases, overlooked items) BEFORE implementing.
+2. MANDATORY: Call @oracle to review your plan BEFORE implementing.
 3. Implement the work yourself, or offload parallel tasks to @fixer.
-4. MANDATORY: Call @oracle at the end of the implementation to review the final code for bugs and logical errors. Treat @oracle as your strict supervisor.
-5. Use @designer for UI, @observer for vision, @explorer/@librarian for context.`;
-      break;
-    case 2:
-      tierRules = `**Tier 2: Sophisticated Ideation & Planning**
-Focus: High value, high performance, high cost. Vision expansion.
+4. MANDATORY: Call @oracle at the end of the implementation to review the final code.`;
+  } else if (tier === 2) {
+    tierRules = `**Tier 2: Deep Collaboration & Multiple Reviews**
+Focus: High-quality, heavily supervised implementation.
 Rules:
-1. The user has provided a vision or basic idea.
-2. MANDATORY: You must FIRST use the \`roundtable\` tool to plan the non-technical implementation, get creative feature suggestions, and refine the updated, perfected version of the user's vision.
-3. Once the roundtable outputs its report, you must translate it into a technical implementation plan.
-4. MANDATORY: Call @oracle to review your technical translation of the roundtable's plan BEFORE implementing.
-5. Proceed with implementation. Call @oracle for a final code review at the end.`;
-      break;
-    case 3:
-      tierRules = `**Tier 3: Sophisticated Implementation**
-Focus: Complex, ambiguous implementation.
+1. You are working under the strict supervision of @oracle.
+2. You must interact with @oracle multiple times: for initial planning, during major implementation steps, and for final corrections.
+3. Utilize all normal sub-agents (@explorer, @librarian, @designer) extensively to gather perfect context before acting.
+4. Expect and proactively seek multiple reviews and corrections.`;
+  } else if (tier === 3) {
+    tierRules = `**Tier 3: The "All Out" Tier**
+Focus: Maximum sophistication, ideation, and complex problem solving.
 Rules:
-1. You implement the main tasks. Occasionally ask @oracle for spot-checks.
-2. AMBIGUITY RESOLUTION: If during implementation the task has multiple perspectives or it is not clearly decidable what the best course of action is, you MUST invoke the \`roundtable\` tool to decide the path forward.
-3. Offload parallel known tasks to @fixer, UI to @designer.
-4. MANDATORY: Call @oracle for a final code review at the end.`;
-      break;
+1. This is the highest level of execution. You use everything available.
+2. **ROUNDTABLE MANDATORY:** Because task requirements at this tier are often vague or have multiple valid approaches, you MUST start by invoking the \`roundtable\` tool. Let the debaters ideate, refine the vision, and figure out the best approach.
+3. Once the roundtable produces a council report, translate it into a technical plan and have @oracle review it.
+4. During implementation, if any ambiguity arises, invoke the \`roundtable\` tool again.
+5. Work with @oracle for continuous, strict supervision (multiple reviews/corrections).`;
   }
 
   return [
-    `You are operating in a strict structured workflow.`,
-    '',
-    COMMON_REQUIREMENTS,
+    `You are operating in **Tier ${tier}**. Follow these rules strictly:`,
     '',
     tierRules,
+    '',
+    'State Management Requirements:',
+    '- Inspect `.gitignore` and `.ignore`. Add `.slim/tier_state/` to `.gitignore` and `!.slim/tier_state/` to `.ignore`.',
+    '- Maintain a progress file at `.slim/tier_state/progress.md`.',
+    '- Keep OpenCode todos synced.',
     '',
     'Task:',
     task,
@@ -72,14 +53,13 @@ export function createTierCommandsHook(): {
     output: { parts: Array<{ type: string; text?: string }> },
   ) => Promise<void>;
 } {
-  const commands = ['tier0', 'tier1', 'tier2', 'tier3'];
+  const commands = ['tier1', 'tier2', 'tier3'];
 
   return {
     registerCommand: (opencodeConfig) => {
-      registerCommandHook(opencodeConfig, 'tier0', 'Start a Tier 0 session (Fast, direct implementation)', 'Basic mode');
-      registerCommandHook(opencodeConfig, 'tier1', 'Start a Tier 1 session (Guided/Supervised by Oracle)', 'Supervised mode');
-      registerCommandHook(opencodeConfig, 'tier2', 'Start a Tier 2 session (Ideation via Roundtable -> Supervised)', 'Sophisticated Ideation');
-      registerCommandHook(opencodeConfig, 'tier3', 'Start a Tier 3 session (Complex implementation with Roundtable fallback)', 'Sophisticated Implementation');
+      registerCommandHook(opencodeConfig, 'tier1', 'Start a Tier 1 session (Basic Oracle Collaboration)', 'Tier 1');
+      registerCommandHook(opencodeConfig, 'tier2', 'Start a Tier 2 session (Deep Collaboration & Multiple Reviews)', 'Tier 2');
+      registerCommandHook(opencodeConfig, 'tier3', 'Start a Tier 3 session (All-Out: Roundtable + Deep Collaboration)', 'Tier 3');
     },
 
     handleCommandExecuteBefore: async (input, output) => {
@@ -97,7 +77,7 @@ export function createTierCommandsHook(): {
       }
 
       const tierNum = parseInt(input.command.replace('tier', ''), 10);
-      output.parts.push({ type: 'text', text: getTierPrompt(tierNum, task) });
+      output.parts.push({ type: 'text', text: activationPrompt(tierNum, task) });
     },
   };
 }
