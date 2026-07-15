@@ -4,7 +4,16 @@ import { registerCommandHook } from '../command-hook-utils';
 function activationPrompt(tier: number, task: string): string {
   let tierRules = '';
 
-  if (tier === 1) {
+  if (tier === 0) {
+    tierRules = `**Tier 0: Basic Mode**
+Focus: Fast, direct implementation. Low cooperation overhead.
+Rules:
+1. You (Orchestrator) do the main implementation work.
+2. High threshold for asking for review. No mandatory @oracle review.
+3. Use @explorer and @librarian freely for basic context.
+4. If parallel simple implementation is needed, offload to @fixer.
+5. If visual design is needed, call @designer.`;
+  } else if (tier === 1) {
     tierRules = `**Tier 1: Basic Collaboration**
 Focus: Quality assurance through basic supervision.
 Rules:
@@ -32,13 +41,14 @@ Rules:
   }
 
   return [
+    `Use the **tier${tier}-workflow** skill for this task. Load it to understand the required documentation structure.`,
     `You are operating in **Tier ${tier}**. Follow these rules strictly:`,
     '',
     tierRules,
     '',
     'State Management Requirements:',
     '- Inspect `.gitignore` and `.ignore`. Add `.slim/tier_state/` to `.gitignore` and `!.slim/tier_state/` to `.ignore`.',
-    '- Maintain a progress file at `.slim/tier_state/progress.md`.',
+    '- Maintain a progress file at `.slim/tier_state/progress.md` following the structure defined in your skill.',
     '- Keep OpenCode todos synced.',
     '',
     'Task:',
@@ -53,10 +63,11 @@ export function createTierCommandsHook(): {
     output: { parts: Array<{ type: string; text?: string }> },
   ) => Promise<void>;
 } {
-  const commands = ['tier1', 'tier2', 'tier3'];
+  const commands = ['tier0', 'tier1', 'tier2', 'tier3'];
 
   return {
     registerCommand: (opencodeConfig) => {
+      registerCommandHook(opencodeConfig, 'tier0', 'Start a Tier 0 session (Basic Mode)', 'Tier 0');
       registerCommandHook(opencodeConfig, 'tier1', 'Start a Tier 1 session (Basic Oracle Collaboration)', 'Tier 1');
       registerCommandHook(opencodeConfig, 'tier2', 'Start a Tier 2 session (Deep Collaboration & Multiple Reviews)', 'Tier 2');
       registerCommandHook(opencodeConfig, 'tier3', 'Start a Tier 3 session (All-Out: Roundtable + Deep Collaboration)', 'Tier 3');

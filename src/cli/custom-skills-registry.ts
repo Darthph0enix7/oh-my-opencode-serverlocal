@@ -63,4 +63,28 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
     allowedAgents: ['orchestrator'],
     sourcePath: 'src/skills/worktrees',
   },
+  {
+    name: 'tier0-workflow',
+    description: 'Fast, direct implementation workflow for routine tasks. Basic state documentation, low cooperation overhead.',
+    allowedAgents: ['orchestrator'],
+    sourcePath: 'src/skills/tier0-workflow',
+  },
+  {
+    name: 'tier1-workflow',
+    description: 'Guided and supervised workflow. Mandatory Oracle reviews for planning and final implementation.',
+    allowedAgents: ['orchestrator'],
+    sourcePath: 'src/skills/tier1-workflow',
+  },
+  {
+    name: 'tier2-workflow',
+    description: 'Sophisticated ideation and planning. Mandatory roundtable tool usage for vision expansion before technical implementation.',
+    allowedAgents: ['orchestrator'],
+    sourcePath: 'src/skills/tier2-workflow',
+  },
+  {
+    name: 'tier3-workflow',
+    description: 'The "All Out" Tier. Complex implementation with continuous Oracle supervision and Roundtable ambiguity resolution.',
+    allowedAgents: ['orchestrator'],
+    sourcePath: 'src/skills/tier3-workflow',
+  },
 ];
