@@ -29,7 +29,7 @@ const packagedRequiredFiles = [
   'dist/index.js',
   'dist/index.d.ts',
   'dist/cli/index.js',
-  'oh-my-opencode-slim.schema.json',
+  'oh-my-opencode-serverlocal.schema.json',
   'src/companion/companion-manifest.json',
   'src/skills/simplify/SKILL.md',
   'src/skills/codemap/SKILL.md',
