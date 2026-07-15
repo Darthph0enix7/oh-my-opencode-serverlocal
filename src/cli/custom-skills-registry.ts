@@ -64,12 +64,6 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
     sourcePath: 'src/skills/worktrees',
   },
   {
-    name: 'tier0-workflow',
-    description: 'Fast, direct implementation workflow for routine tasks. Basic state documentation, low cooperation overhead.',
-    allowedAgents: ['orchestrator'],
-    sourcePath: 'src/skills/tier0-workflow',
-  },
-  {
     name: 'tier1-workflow',
     description: 'Guided and supervised workflow. Mandatory Oracle reviews for planning and final implementation.',
     allowedAgents: ['orchestrator'],
