@@ -30,7 +30,7 @@ export interface CmuxSessionRecord {
   spawnPromise?: Promise<PaneResult>;
 }
 
-const STORE_KEY = Symbol.for('oh-my-opencode-slim.cmux-session-store');
+const STORE_KEY = Symbol.for('oh-my-opencode-serverlocal.cmux-session-store');
 
 function records(): Map<string, CmuxSessionRecord> {
   const globalStore = globalThis as typeof globalThis & {

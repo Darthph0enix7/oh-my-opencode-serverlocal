@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sync-upstream.sh — Pull upstream alvinunreal/oh-my-opencode-slim into our fork.
+# sync-upstream.sh — Pull upstream alvinunreal/oh-my-opencode-serverlocal into our fork.
 #
 # Usage:
 #   ./scripts/sync-upstream.sh           # one-time: add upstream remote
@@ -16,7 +16,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-UPSTREAM_URL="https://github.com/alvinunreal/oh-my-opencode-slim.git"
+UPSTREAM_URL="https://github.com/alvinunreal/oh-my-opencode-serverlocal.git"
 
 # Step 0: ensure upstream remote exists
 if ! git remote get-url upstream >/dev/null 2>&1; then
@@ -44,7 +44,7 @@ case "${1:-fetch}" in
     echo "  ⚠ Especially likely in: src/agents/, src/hooks/, src/index.ts, package.json"
     echo ""
     git fetch upstream master
-    git merge upstream/master --no-ff -m "merge: pull upstream changes from alvinunreal/oh-my-opencode-slim"
+    git merge upstream/master --no-ff -m "merge: pull upstream changes from alvinunreal/oh-my-opencode-serverlocal"
     echo ""
     echo "=== post-merge state ==="
     git status --short

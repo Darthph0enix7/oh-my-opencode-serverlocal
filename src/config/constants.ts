@@ -26,7 +26,7 @@ export const PROTECTED_AGENTS = new Set(['orchestrator', 'councillor']);
 /**
  * Default models for each agent.
  * All set to undefined so agents follow the global/session model.
- * Users can override per-agent via oh-my-opencode-slim.json agents.<name>.model.
+ * Users can override per-agent via oh-my-opencode-serverlocal.json agents.<name>.model.
  */
 export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   orchestrator: undefined,

@@ -5,11 +5,11 @@
 #   ./scripts/install-local.sh    # copies dist/* into OpenCode's plugin cache
 #
 # After running this, OpenCode will use OUR fork instead of upstream
-# oh-my-opencode-slim on next startup.
+# oh-my-opencode-serverlocal on next startup.
 #
 # This script:
 #   1. Removes any existing oh-my-opencode-serverlocal cache
-#   2. Removes the upstream oh-my-opencode-slim cache (our replacement)
+#   2. Removes the upstream oh-my-opencode-serverlocal cache (our replacement)
 #   3. Installs our built dist into the @latest cache so OpenCode loads it
 
 set -euo pipefail
@@ -21,7 +21,7 @@ echo "=== installing built dist to OpenCode cache ==="
 
 # Determine our cache target
 OUR_CACHE="${CACHE_BASE}/oh-my-opencode-serverlocal@latest"
-UPSTREAM_CACHE="${CACHE_BASE}/oh-my-opencode-slim@latest"
+UPSTREAM_CACHE="${CACHE_BASE}/oh-my-opencode-serverlocal@latest"
 
 # Step 1: clear any existing copies
 echo ""
@@ -33,8 +33,8 @@ fi
 if [[ -d "${CACHE_BASE}/oh-my-opencode-serverlocal" ]]; then
   rm -rf "${CACHE_BASE}/oh-my-opencode-serverlocal"
 fi
-if [[ -d "${CACHE_BASE}/oh-my-opencode-slim" ]]; then
-  rm -rf "${CACHE_BASE}/oh-my-opencode-slim"
+if [[ -d "${CACHE_BASE}/oh-my-opencode-serverlocal" ]]; then
+  rm -rf "${CACHE_BASE}/oh-my-opencode-serverlocal"
 fi
 
 # Step 2: install ours via npm (using our local tarball), so OpenCode reuses it

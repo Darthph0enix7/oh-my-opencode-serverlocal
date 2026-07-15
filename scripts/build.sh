@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build.sh — Build the serverlocal fork of oh-my-opencode-slim.
+# build.sh — Build the serverlocal fork of oh-my-opencode-serverlocal.
 #
 # Usage:
 #   ./scripts/build.sh           # full build (clean → plugin → cli → schema)

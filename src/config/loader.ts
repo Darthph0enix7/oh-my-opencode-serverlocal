@@ -77,7 +77,7 @@ function loadConfigFromPath(
       });
       if (!options?.silent) {
         console.warn(
-          `[oh-my-opencode-slim] Invalid JSON in ${configPath}:`,
+          `[oh-my-opencode-serverlocal] Invalid JSON in ${configPath}:`,
           message,
         );
       }
@@ -93,7 +93,7 @@ function loadConfigFromPath(
         formatted: result.error.format(),
       });
       if (!options?.silent) {
-        console.warn(`[oh-my-opencode-slim] Invalid config at ${configPath}:`);
+        console.warn(`[oh-my-opencode-serverlocal] Invalid config at ${configPath}:`);
         console.warn(result.error.format());
       }
       return null;
@@ -114,7 +114,7 @@ function loadConfigFromPath(
       });
       if (!options?.silent) {
         console.warn(
-          `[oh-my-opencode-slim] Error reading config from ${configPath}:`,
+          `[oh-my-opencode-serverlocal] Error reading config from ${configPath}:`,
           error.message,
         );
       }
@@ -127,7 +127,7 @@ function loadConfigFromPath(
  * Find existing config file path, preferring .jsonc over .json.
  * Checks for .jsonc first, then falls back to .json.
  *
- * @param basePath - Base path without extension (e.g., /path/to/oh-my-opencode-slim)
+ * @param basePath - Base path without extension (e.g., /path/to/oh-my-opencode-serverlocal)
  * @returns Path to existing config file, or null if neither exists
  */
 function findConfigPath(basePath: string): string | null {
@@ -177,7 +177,7 @@ function validateFinalImageRouting(
     message,
   });
   if (!options?.silent) {
-    console.warn(`[oh-my-opencode-slim] Invalid config: ${message}`);
+    console.warn(`[oh-my-opencode-serverlocal] Invalid config: ${message}`);
   }
   return false;
 }
@@ -185,7 +185,7 @@ function validateFinalImageRouting(
 /**
  * Find plugin config paths (user and project) for a given directory.
  * User config uses getConfigSearchDirs() for lookup.
- * Project config uses <directory>/.opencode/oh-my-opencode-slim.
+ * Project config uses <directory>/.opencode/oh-my-opencode-serverlocal.
  *
  * @param directory - Project directory to search for .opencode config
  * @returns Object with userConfigPath and projectConfigPath (null if not found)
@@ -280,9 +280,9 @@ export function deepMerge<T extends Record<string, unknown>>(
  * Load plugin configuration from user and project config files, merging them appropriately.
  *
  * Configuration is loaded from two locations:
- * 1. User config: $OPENCODE_CONFIG_DIR/oh-my-opencode-slim.jsonc or .json,
- *    or ~/.config/opencode/oh-my-opencode-slim.jsonc or .json (or $XDG_CONFIG_HOME)
- * 2. Project config: <directory>/.opencode/oh-my-opencode-slim.jsonc or .json
+ * 1. User config: $OPENCODE_CONFIG_DIR/oh-my-opencode-serverlocal.jsonc or .json,
+ *    or ~/.config/opencode/oh-my-opencode-serverlocal.jsonc or .json (or $XDG_CONFIG_HOME)
+ * 2. Project config: <directory>/.opencode/oh-my-opencode-serverlocal.jsonc or .json
  *
  * JSONC format is preferred over JSON (allows comments and trailing commas).
  * Project config takes precedence over user config. Nested objects (agents, tmux) are
@@ -339,7 +339,7 @@ export function loadPluginConfig(
         message,
       });
       if (!options?.silent) {
-        console.warn(`[oh-my-opencode-slim] ${message}`);
+        console.warn(`[oh-my-opencode-serverlocal] ${message}`);
       }
     }
   }
@@ -435,7 +435,7 @@ export function loadAgentPrompt(
         return fs.readFileSync(promptPath, 'utf-8');
       } catch (error) {
         console.warn(
-          `[oh-my-opencode-slim] ${errorPrefix} ${promptPath}:`,
+          `[oh-my-opencode-serverlocal] ${errorPrefix} ${promptPath}:`,
           error instanceof Error ? error.message : String(error),
         );
       }
