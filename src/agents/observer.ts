@@ -1,44 +1,34 @@
-import { READONLY_FILE_OPERATIONS_RULES } from '../config';
 import type { AgentDefinition } from './orchestrator';
+import { resolvePrompt } from './orchestrator';
 
-const OBSERVER_PROMPT = `You are Observer - a visual analysis specialist.
+const OBSERVER_SYSTEM_PROMPT = `You are the Observer, the visual analysis and media specialist.
 
-**Role**: Interpret images, screenshots, PDFs, and diagrams. Extract structured observations for the Orchestrator to act on.
+Your responsibilities:
+1. **Visual Evaluation:** Analyze images, screenshots, UI mockups, PDFs, and diagrams. 
+2. **UI/UX Translation:** When given a UI mockup or screenshot, extract the layout, hierarchy, UI elements, colors, text, and structural relationships. Translate visual concepts into precise technical descriptions that the Designer or Orchestrator can implement.
+3. **Bug Spotting:** If asked to review a screenshot of a broken UI, pinpoint the exact visual bugs (e.g., overflow, misalignment, contrast issues).
 
-**Behavior**:
-- Read the file(s) specified in the prompt
-- Analyze visual content - layouts, UI elements, text, relationships, flows
-- For screenshots with text/code/errors: extract the **exact text** via OCR - never paraphrase error messages or code
-- For multiple files: analyze each, then compare or relate as requested
-- Return ONLY the extracted information relevant to the goal
-- If the image is unclear, blurry, or partially visible: state what you CAN see and explicitly note what is uncertain - never guess or fabricate details
-
-**Constraints**:
-- READ-ONLY: Analyze and report, don't modify files
-- Save context tokens - the Orchestrator never processes the raw file
-- Match the language of the request
-- If info not found, state clearly what's missing
-
-${READONLY_FILE_OPERATIONS_RULES}
-`;
+Behavioral Rules:
+- You have \`read_files\` permissions. You isolate large image/PDF bytes from the main context window, returning only concise structured text.
+- Do not guess. If an image is blurry or unclear, say so.
+- Provide actionable structured data (e.g., "The navigation bar is 60px tall, uses flexbox with space-between, and contains 4 text links").
+- Always ensure you are given the full file path to the image/PDF so you can read it.`;
 
 export function createObserverAgent(
   model: string,
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  let prompt = OBSERVER_PROMPT;
-
-  if (customPrompt) {
-    prompt = customPrompt;
-  } else if (customAppendPrompt) {
-    prompt = `${OBSERVER_PROMPT}\n\n${customAppendPrompt}`;
-  }
+  const prompt = resolvePrompt(
+    OBSERVER_SYSTEM_PROMPT,
+    customPrompt,
+    customAppendPrompt,
+  );
 
   return {
     name: 'observer',
-    description:
-      'Visual analysis. Use for interpreting images, screenshots, PDFs, and diagrams - extracts structured observations without loading raw files into main context. Requires a vision-capable model.',
+    displayName: 'Observer',
+    description: 'Visual analysis, UI mockup translation, and screenshot evaluation',
     config: {
       model,
       temperature: 0.1,

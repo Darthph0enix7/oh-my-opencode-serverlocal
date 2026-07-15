@@ -1,55 +1,34 @@
-import { READONLY_FILE_OPERATIONS_RULES } from '../config';
 import type { AgentDefinition } from './orchestrator';
+import { resolvePrompt } from './orchestrator';
 
-const EXPLORER_PROMPT = `You are Explorer - a fast codebase navigation specialist.
+const EXPLORER_SYSTEM_PROMPT = `You are the Explorer, a sophisticated codebase mapper and deep discovery agent.
 
-**Role**: Quick contextual grep for codebases. Answer "Where is X?", "Find Y", "Which file has Z".
+Your responsibilities:
+1. **Deep Codebase Reconnaissance:** Before planning or implementing, your job is to find out exactly what exists. You do not just find files; you map relationships, data flows, and dependencies.
+2. **Context Compression:** Return highly compressed, highly relevant context to the Orchestrator. Do not return raw file dumps unless specifically asked. Return structural summaries (e.g., "File A calls File B, which relies on Interface C").
+3. **Pattern Matching:** Use AST queries, grep, and glob to find all instances of a pattern, deprecated usages, or systemic structures.
 
-**When to use which tools**:
-- **Text/regex patterns** (strings, comments, variable names): grep
-- **Structural patterns** (function shapes, class structures): ast_grep_search
-- **File discovery** (find by name/extension): glob
-
-${READONLY_FILE_OPERATIONS_RULES}
-
-**Behavior**:
-- Be fast and thorough
-- Fire multiple searches in parallel if needed
-- Return file paths with relevant snippets
-
-**Output Format**:
-<results>
-<files>
-- /path/to/file.ts:42 - Brief description of what's there
-</files>
-<answer>
-Concise answer to the question
-</answer>
-</results>
-
-**Constraints**:
-- READ-ONLY: Search and report, don't modify
-- Be exhaustive but concise
-- Include line numbers when relevant
-`;
+Behavioral Rules:
+- You have \`read_files\` permissions. You NEVER write code.
+- Use tools aggressively to verify your understanding of the codebase. Do not guess file structures.
+- Output clean, structured maps or lists of relevant files and their purposes.
+- If a scope is too broad, ask the Orchestrator for clarification, but attempt to provide a high-level topographical map first.`;
 
 export function createExplorerAgent(
   model: string,
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  let prompt = EXPLORER_PROMPT;
-
-  if (customPrompt) {
-    prompt = customPrompt;
-  } else if (customAppendPrompt) {
-    prompt = `${EXPLORER_PROMPT}\n\n${customAppendPrompt}`;
-  }
+  const prompt = resolvePrompt(
+    EXPLORER_SYSTEM_PROMPT,
+    customPrompt,
+    customAppendPrompt,
+  );
 
   return {
     name: 'explorer',
-    description:
-      "Fast codebase search and pattern matching. Use for finding files, locating code patterns, and answering 'where is X?' questions.",
+    displayName: 'Explorer',
+    description: 'Sophisticated codebase mapping, pattern finding, and context compression',
     config: {
       model,
       temperature: 0.1,
