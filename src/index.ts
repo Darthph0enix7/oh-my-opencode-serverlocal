@@ -82,7 +82,7 @@ async function appLog(
 ): Promise<void> {
   try {
     await ctx.client.app.log({
-      body: { service: 'oh-my-opencode-slim', level, message },
+      body: { service: 'oh-my-opencode-serverlocal', level, message },
     });
   } catch {
     // client.app.log may deadlock or be unavailable; stderr is the
@@ -544,7 +544,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   }
 
   return {
-    name: 'oh-my-opencode-slim',
+    name: 'oh-my-opencode-serverlocal',
 
     agent: agents,
 

@@ -10,7 +10,7 @@ export interface TuiSnapshot {
   agentVariants: Record<string, string>;
 }
 
-const STATE_DIR = 'oh-my-opencode-slim';
+const STATE_DIR = 'oh-my-opencode-serverlocal';
 const STATE_FILE = 'tui-state.json';
 
 function dataDir(): string {
