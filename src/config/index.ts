@@ -1,5 +1,4 @@
 export * from './constants';
-export * from './council-schema';
 export {
   deepMerge,
   loadAgentPrompt,

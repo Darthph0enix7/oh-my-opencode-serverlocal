@@ -16,8 +16,6 @@ import {
 } from '../config';
 import { getAgentMcpList } from '../config/agent-mcps';
 
-import { createCouncilAgent } from './council';
-import { createCouncillorAgent } from './councillor';
 import { createDesignerAgent } from './designer';
 import { createExplorerAgent } from './explorer';
 import { createFixerAgent } from './fixer';
@@ -38,7 +36,6 @@ type AgentFactory = (
   customAppendPrompt?: string,
 ) => AgentDefinition;
 
-const COUNCIL_TOOL_ALLOWED_AGENTS = new Set(['council']);
 const CANCEL_TASK_ALLOWED_AGENTS = new Set(['orchestrator']);
 const SAFE_AGENT_ALIAS_RE = /^[a-z][a-z0-9_-]*$/i;
 
@@ -268,7 +265,7 @@ function injectDisplayNames(
  * If configuredSkills is provided, it honors that list instead of defaults.
  *
  * Note: If the agent already explicitly sets question to 'deny', that is
- * respected (e.g. councillor should not ask questions).
+ * respected (e.g. internal agents should not ask questions).
  */
 function applyDefaultPermissions(
   agent: AgentDefinition,
@@ -294,11 +291,8 @@ function applyDefaultPermissions(
     disabledSkills,
   );
 
-  // Respect explicit deny on question (councillor)
+  // Respect explicit deny on question
   const questionPerm = existing.question === 'deny' ? 'deny' : 'allow';
-  const councilSessionPerm = COUNCIL_TOOL_ALLOWED_AGENTS.has(agent.name)
-    ? (existing.council_session ?? 'allow')
-    : 'deny';
   const cancelTaskPerm = CANCEL_TASK_ALLOWED_AGENTS.has(agent.name)
     ? (existing.cancel_task ?? 'allow')
     : 'deny';
@@ -306,7 +300,6 @@ function applyDefaultPermissions(
   agent.config.permission = {
     ...existing,
     question: questionPerm,
-    council_session: councilSessionPerm,
     cancel_task: cancelTaskPerm,
     // Apply skill permissions as nested object under 'skill' key
     skill: {
@@ -333,8 +326,6 @@ const SUBAGENT_FACTORIES: Record<SubagentName, AgentFactory> = {
   designer: createDesignerAgent,
   fixer: createFixerAgent,
   observer: createObserverAgent,
-  council: createCouncilAgent,
-  councillor: createCouncillorAgent,
 };
 
 // Public API
@@ -351,9 +342,6 @@ export function createAgents(
   options?: { projectDirectory?: string },
 ): AgentDefinition[] {
   const disabled = getDisabledAgents(config);
-  if (!config?.council) {
-    disabled.add('council');
-  }
 
   const primaryModel = getConfigPrimaryModel(config);
 
@@ -480,21 +468,6 @@ export function createAgents(
     applyDefaultPermissions(agent, override?.skills, config?.disabled_skills);
     return agent;
   });
-
-  // 2b. Backward compat: if council has no preset override and still uses the
-  // hardcoded default model, fall back to the deprecated council.master.model.
-  // See https://github.com/Darthph0enix7/oh-my-opencode-serverlocal/issues/369
-  const legacyMasterModel = config?.council?._legacyMasterModel;
-  if (legacyMasterModel) {
-    const councilAgent = builtInSubAgents.find((a) => a.name === 'council');
-    if (
-      councilAgent &&
-      !getAgentOverride(config, 'council')?.model &&
-      councilAgent.config.model === DEFAULT_MODELS.council
-    ) {
-      councilAgent.config.model = legacyMasterModel;
-    }
-  }
 
   const customSubAgents = protoCustomAgents.map((agent) => {
     const override = getAgentOverride(config, agent.name);
@@ -673,15 +646,7 @@ export function getAgentConfigs(
       hidden?: boolean;
     },
   ): void => {
-    if (name === 'council') {
-      // Council is callable both as a primary agent (user-facing)
-      // and as a subagent (orchestrator can delegate to it)
-      sdkConfig.mode = 'all';
-    } else if (name === 'councillor') {
-      // Internal agent - subagent mode, hidden from @ autocomplete
-      sdkConfig.mode = 'subagent';
-      sdkConfig.hidden = true;
-    } else if (isSubagent(name)) {
+    if (isSubagent(name)) {
       sdkConfig.mode = 'subagent';
     } else if (name === 'orchestrator') {
       sdkConfig.mode = 'primary';
@@ -690,7 +655,7 @@ export function getAgentConfigs(
     }
   };
 
-  const isInternalOnly = (name: string): boolean => name === 'councillor';
+  const isInternalOnly = (_name: string): boolean => false;
 
   const entries: Array<[string, SDKAgentConfig]> = [];
 

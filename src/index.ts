@@ -23,7 +23,6 @@ import {
   setActiveRuntimePreset,
 } from './config/runtime-preset';
 import { applyOrchestratorModelConfig } from './config/strip-orchestrator-model';
-import { CouncilManager } from './council';
 import {
   createApplyPatchHook,
   createAutoUpdateCheckerHook,
@@ -54,7 +53,6 @@ import {
   ast_grep_search,
   createAcpRunTool,
   createCancelTaskTool,
-  createCouncilTool,
   createPresetManager,
   createWebfetchTool,
 } from './tools';
@@ -96,7 +94,7 @@ async function appLog(
 /** Minimum expected registrations for a healthy plugin load. */
 const HEALTH_CHECK = {
   minAgents: 5,
-  // Default tool set when council and ACP agents are not configured:
+  // Default tool set when ACP agents are not configured:
   // cancel_task, webfetch, ast_grep_search, ast_grep_replace.
   minTools: 4,
   minMcps: 1,
@@ -172,7 +170,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   let interviewManager: ReturnType<typeof createInterviewManager>;
   let presetManager: ReturnType<typeof createPresetManager>;
   let companionManager: CompanionManager;
-  let councilTools: ReturnType<typeof createCouncilTool>;
+  let councilTools: Record<string, never> = {};
   let cancelTaskTools: ReturnType<typeof createCancelTaskTool>;
   let acpRunTools: Record<string, ReturnType<typeof createAcpRunTool>>;
   let webfetch: ReturnType<typeof createWebfetchTool>;
@@ -254,13 +252,8 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
 
     depthTracker = new SubagentDepthTracker();
 
-    // Initialize council tools (only when council is configured)
-    councilTools = config.council
-      ? createCouncilTool(
-          ctx,
-          new CouncilManager(ctx, config, depthTracker, multiplexerEnabled),
-        )
-      : {};
+    // Council tool removed — using opencode-roundtable instead
+    councilTools = {};
 
     mcps = createBuiltinMcps(config.disabled_mcps, config.websearch);
     acpRunTools =
@@ -769,7 +762,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       const tuiAgentModels: Record<string, string> = {};
       const tuiAgentVariants: Record<string, string> = {};
       for (const agentDef of agentDefs) {
-        if (agentDef.name === 'councillor') continue;
+        if (agentDef.name === 'councillor' || agentDef.name === 'council') continue;
 
         const entry = configAgent[agentDef.name] as
           | Record<string, unknown>

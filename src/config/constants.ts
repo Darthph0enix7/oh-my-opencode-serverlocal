@@ -11,8 +11,6 @@ export const SUBAGENT_NAMES = [
   'designer',
   'fixer',
   'observer',
-  'council',
-  'councillor',
 ] as const;
 
 export const ALL_AGENT_NAMES = ['orchestrator', ...SUBAGENT_NAMES] as const;
@@ -21,7 +19,7 @@ export const ALL_AGENT_NAMES = ['orchestrator', ...SUBAGENT_NAMES] as const;
 export type AgentName = (typeof ALL_AGENT_NAMES)[number];
 
 /** Agents that cannot be disabled even if listed in disabled_agents config. */
-export const PROTECTED_AGENTS = new Set(['orchestrator', 'councillor']);
+export const PROTECTED_AGENTS = new Set(['orchestrator']);
 
 /**
  * Default models for each agent.
@@ -36,8 +34,6 @@ export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   designer: undefined,
   fixer: undefined,
   observer: undefined,
-  council: undefined,
-  councillor: undefined,
 };
 
 // Polling configuration

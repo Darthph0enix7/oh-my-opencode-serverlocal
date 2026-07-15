@@ -13,10 +13,7 @@ import { isPluginDisabledByEnv } from './utils/env';
 const PLUGIN_NAME = 'oh-my-opencode-serverlocal';
 const CONFIG_WARNING_COLOR = 'orange';
 const FALLBACK_SIDEBAR_AGENTS = SUBAGENT_NAMES.filter(
-  (agent) =>
-    agent !== 'councillor' &&
-    agent !== 'council' &&
-    !DEFAULT_DISABLED_AGENTS.includes(agent),
+  (agent) => !DEFAULT_DISABLED_AGENTS.includes(agent),
 );
 const BORDER = { type: 'single' };
 

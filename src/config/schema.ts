@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { CouncilConfigSchema } from './council-schema';
 
 const MANUAL_AGENT_NAMES = [
   'orchestrator',
@@ -372,7 +371,7 @@ export const PluginConfigSchema = z
       .describe(
         'Agent names to disable completely. ' +
           'Disabled agents are not instantiated and cannot be delegated to. ' +
-          'Orchestrator and council internal agents (councillor) cannot be disabled. ' +
+          'Orchestrator cannot be disabled. ' +
           "By default, 'observer' is disabled. Remove it from this list and configure a vision-capable model to enable.",
       ),
     image_routing: z
@@ -414,7 +413,6 @@ export const PluginConfigSchema = z
     interview: InterviewConfigSchema.optional(),
     backgroundJobs: BackgroundJobsConfigSchema.optional(),
     fallback: FailoverConfigSchema.optional(),
-    council: CouncilConfigSchema.optional(),
     companion: CompanionConfigSchema.optional(),
     acpAgents: AcpAgentsConfigSchema.optional(),
   })

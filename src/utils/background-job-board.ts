@@ -78,7 +78,6 @@ const TERMINAL_STATES = new Set<BackgroundJobState>([
 ]);
 
 const AGENT_PREFIX: Record<string, string> = {
-  council: 'cou',
   designer: 'des',
   explorer: 'exp',
   fixer: 'fix',
