@@ -9,7 +9,7 @@ State Management Guidelines:
 - Execute phase by phase.
 `;
 
-function getTierPrompt(tier: number, task: string): string {
+function getTierPrompt(tier: number, task?: string): string {
   let tierRules = '';
 
   if (tier === 1) {
@@ -22,11 +22,11 @@ Guidelines:
 4. Depending on how long the implementation goes or how many features are involved, call @oracle to cooperate with you as a supervisor when needed. At a minimum, let it review at the beginning and the end.`;
   } else if (tier === 2) {
     tierRules = `**Tier 2: Sophisticated & High Performance**
-Focus: High value, high performance, high cost workflow.
+Focus: High value, high performance, high cost workflow with strict Oracle gating.
 Guidelines:
 1. Deep cooperation with all sub-agents (@explorer, @librarian, @designer).
 2. Work closely with @oracle as a strict supervisor. 
-3. Expect to perform multiple reviews and corrections during the implementation process to ensure the highest quality output. Use your judgment to call for reviews frequently.`;
+3. **STRICT ORACLE LOOP:** When reviewing implementation or bug fixes, you must loop back and forth with @oracle. Ask @oracle to find bugs. You implement the fixes, then ask @oracle again. You CANNOT finish the implementation phase until @oracle explicitly outputs "VERDICT: SHIP IT".`;
   } else if (tier === 3) {
     tierRules = `**Tier 3: The "All Out" Tier**
 Focus: Maximum sophistication, ideation, and complex problem solving.
@@ -37,18 +37,23 @@ Guidelines:
 4. If the task has more needs, multiple perspectives, or if it is not clearly decidable what the best course of action is, invoke the \`roundtable\` tool again to decide the path forward.`;
   }
 
-  return [
-    `Use the **tier${tier}-workflow** skill for this task to structure your documentation.`,
-    `You are operating in **Tier ${tier}**.`,
+  const parts = [
+    `You are operating in **Tier ${tier}**. Use the **tier${tier}-workflow** skill.`,
     '',
     tierRules,
     '',
     COMMON_REQUIREMENTS,
-    '',
-    'Task:',
-    task,
-  ].join('\n');
+  ];
+  
+  if (task) {
+    parts.push('', 'Task:', task);
+  }
+
+  return parts.join('\n');
 }
+
+// Store active tier per session to persist it against context compaction
+const sessionTierMap = new Map<string, number>();
 
 export function createTierCommandsHook(): {
   registerCommand: (config: Record<string, unknown>) => void;
@@ -56,13 +61,17 @@ export function createTierCommandsHook(): {
     input: { command: string; sessionID: string; arguments: string },
     output: { parts: Array<{ type: string; text?: string }> },
   ) => Promise<void>;
+  chatMessagesTransform: (
+    input: { sessionID: string; messages: any[] },
+    output: { messages: any[] }
+  ) => Promise<void>;
 } {
   const commands = ['tier1', 'tier2', 'tier3'];
 
   return {
     registerCommand: (opencodeConfig) => {
       registerCommandHook(opencodeConfig, 'tier1', 'Start a Tier 1 session (Supervised Implementation)', 'Tier 1');
-      registerCommandHook(opencodeConfig, 'tier2', 'Start a Tier 2 session (Sophisticated & High Performance)', 'Tier 2');
+      registerCommandHook(opencodeConfig, 'tier2', 'Start a Tier 2 session (Sophisticated Oracle Loop)', 'Tier 2');
       registerCommandHook(opencodeConfig, 'tier3', 'Start a Tier 3 session (All-Out: Roundtable + Deep Collaboration)', 'Tier 3');
     },
 
@@ -81,7 +90,37 @@ export function createTierCommandsHook(): {
       }
 
       const tierNum = parseInt(input.command.replace('tier', ''), 10);
+      
+      // Save active tier for this session to ensure persistent context
+      sessionTierMap.set(input.sessionID, tierNum);
+      
       output.parts.push({ type: 'text', text: getTierPrompt(tierNum, task) });
     },
+    
+    // Dynamically inject the active tier rules into the system prompt on every turn
+    chatMessagesTransform: async (input, output) => {
+      const activeTier = sessionTierMap.get(input.sessionID);
+      if (activeTier === undefined) return;
+      
+      if (!output.messages || output.messages.length === 0) return;
+      
+      // Find the system message (usually the first one)
+      const systemMessageIndex = output.messages.findIndex(m => m.role === 'system');
+      
+      if (systemMessageIndex !== -1) {
+        const sysMsg = output.messages[systemMessageIndex];
+        const tierRules = getTierPrompt(activeTier);
+        
+        // Append the tier rules forcefully to the system prompt so they are never forgotten
+        const persistentReminder = `\n\n--- ACTIVE WORKFLOW OVERRIDE ---\n${tierRules}`;
+        
+        // Handle string vs parts format
+        if (typeof sysMsg.content === 'string') {
+          sysMsg.content += persistentReminder;
+        } else if (Array.isArray(sysMsg.content)) {
+          sysMsg.content.push({ type: 'text', text: persistentReminder });
+        }
+      }
+    }
   };
 }

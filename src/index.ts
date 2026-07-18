@@ -1206,6 +1206,10 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         input as never,
         typedOutput as never,
       );
+      await tierCommandsHook.chatMessagesTransform(
+        input as never,
+        typedOutput as never,
+      );
     },
 
     'tool.execute.after': async (input, output) => {
