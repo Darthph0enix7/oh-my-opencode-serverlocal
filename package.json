@@ -1,6 +1,6 @@
 {
   "name": "oh-my-opencode-serverlocal",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Custom serverlocal fork of oh-my-opencode-slim — fully owned, custom prompts + commands, dist synced via opencode-dotfiles",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

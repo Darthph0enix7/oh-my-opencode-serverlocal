@@ -36,6 +36,7 @@ import {
   createReflectCommandHook,
   createTaskSessionManagerHook,
   createTierCommandsHook,
+  createMaintenanceCommandHook,
   ForegroundFallbackManager,
   SessionLifecycle,
 } from './hooks';
@@ -154,6 +155,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   let foregroundFallback: ForegroundFallbackManager;
   let applyPatchHook: ReturnType<typeof createApplyPatchHook>;
   let tierCommandsHook: ReturnType<typeof createTierCommandsHook>;
+  let maintenanceCommandHook: ReturnType<typeof createMaintenanceCommandHook>;
   let reflectCommandHook: ReturnType<typeof createReflectCommandHook>;
   let loopCommandHook: ReturnType<typeof createLoopCommandHook>;
   let taskSessionManagerHook: ReturnType<typeof createTaskSessionManagerHook>;
@@ -315,6 +317,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
     );
 
     tierCommandsHook = createTierCommandsHook();
+    maintenanceCommandHook = createMaintenanceCommandHook();
     reflectCommandHook = createReflectCommandHook();
     loopCommandHook = createLoopCommandHook();
     taskSessionManagerHook = createTaskSessionManagerHook(ctx, {
@@ -860,6 +863,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
 
       interviewManager.registerCommand(opencodeConfig);
       tierCommandsHook.registerCommand(opencodeConfig);
+      maintenanceCommandHook.registerCommand(opencodeConfig);
       reflectCommandHook.registerCommand(opencodeConfig);
       loopCommandHook.registerCommand(opencodeConfig);
       presetManager.registerCommand(opencodeConfig);
@@ -1043,6 +1047,15 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       );
 
       await tierCommandsHook.handleCommandExecuteBefore(
+        input as {
+          command: string;
+          sessionID: string;
+          arguments: string;
+        },
+        output as { parts: Array<{ type: string; text?: string }> },
+      );
+
+      await maintenanceCommandHook.handleCommandExecuteBefore(
         input as {
           command: string;
           sessionID: string;

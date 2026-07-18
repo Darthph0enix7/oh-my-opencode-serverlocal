@@ -38,6 +38,7 @@ const AGENT_DESCRIPTIONS: Record<string, string> = {
 - Permissions: read_files
 - Capabilities: Deep architectural reasoning, system-level trade-offs, logic bugs, edge cases, simplification.
 - **CRITICAL DYNAMIC:** Oracle is an advisor, not a dictator. You maintain agency. If Oracle suggests something flawed, over-engineered, or incorrect, you MUST push back, debate, and explain your reasoning. Do not blindly implement bad advice.
+- **CONTEXT PASSING:** When invoking Oracle via the \`task\` tool, you MUST provide comprehensive context. Include the current state, progress from \`.slim/tier_state/progress.md\`, active todos, and specific code snippets. Do not just say "Review this"—equip Oracle with the full picture.
 - **Delegate when:** Planning reviews, final implementation reviews, high-risk refactors, logical error spotting. Oracle finds what you miss.`,
 
   designer: `@designer
