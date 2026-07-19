@@ -301,6 +301,12 @@ function applyDefaultPermissions(
     ...existing,
     question: questionPerm,
     cancel_task: cancelTaskPerm,
+    external_directory: {
+      '*': 'allow',
+      ...(typeof existing.external_directory === 'object'
+        ? existing.external_directory
+        : {}),
+    },
     // Apply skill permissions as nested object under 'skill' key
     skill: {
       ...(typeof existing.skill === 'object' ? existing.skill : {}),
