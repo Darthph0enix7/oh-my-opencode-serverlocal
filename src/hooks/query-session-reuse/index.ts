@@ -134,23 +134,25 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
       const agentType = args.subagent_type.trim();
       if (!options.agents.includes(agentType)) return;
 
-      const unit = getUnit(input.sessionID);
-      const st = unit.agents.get(agentType);
-      if (!st || !canReuse(unit, st)) return;
-
-      // Verify the remembered session is still reusable on the board; if it
-      // vanished or is no longer reusable, drop it and start fresh.
       const board = options.backgroundJobBoard;
       if (!board || typeof board.findReusable !== 'function') return;
+
+      const unit = getUnit(input.sessionID);
+
+      // On-the-fly promotion: the board is the source of truth. The
+      // transform-hook promotion can race the job-completion signal
+      // (idle-reconcile delay), so if the unit has no state for this
+      // agent yet — or the job changed — resolve it HERE at call time.
       const job = board.findReusable(input.sessionID, agentType);
-      if (!job || job.taskID !== st.taskID) {
-        unit.agents.delete(agentType);
-        log('[query-session-reuse] remembered session stale, fresh start', {
-          sessionID: input.sessionID,
-          agentType,
-        });
-        return;
+      if (!job) return; // no reusable session yet → fresh session
+
+      let st = unit.agents.get(agentType);
+      if (!st || st.taskID !== job.taskID) {
+        st = { taskID: job.taskID, resumes: 0, estTokens: seedTokensFromJob(job) };
+        unit.agents.set(agentType, st);
       }
+
+      if (!canReuse(unit, st)) return;
 
       args.task_id = st.taskID;
       st.resumes += 1;
