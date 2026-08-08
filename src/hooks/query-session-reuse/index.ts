@@ -8,9 +8,16 @@
  *
  * Solution: track "work units" — everything between two user messages in an
  * orchestrator session. Within a work unit, if the orchestrator calls an
- * allowlisted subagent that already has a COMPLETED (reusable) session, we
- * silently inject that session's task_id into the call, so the native task
- * tool resumes the same session and the subagent retains its history.
+ * allowlisted subagent that already has a COMPLETED session, we silently
+ * inject that session's task_id into the call, so the native task tool
+ * resumes the same session and the subagent retains its history.
+ *
+ * Why not the board's own `isReusable`/`resolveReusable`: that machinery
+ * requires `!terminalUnreconciled`, which only clears via the background-
+ * task reconcile flow. FOREGROUND task calls (what the orchestrator makes)
+ * keep terminalUnreconciled=true forever, so the board never considers them
+ * reusable — but their sessions are fully complete and perfectly resumable
+ * via task_id. `terminalState === 'completed'` is the right signal.
  *
  * Safety rails:
  * - Allowlist (default: oracle only) — conversational/review agents only.
@@ -19,6 +26,8 @@
  *   context files so history weight is counted, not just incoming prompts.
  * - In-flight guard: a resumed session that is still running is never
  *   reused a second time concurrently (prevents interleaved corruption).
+ * - Cross-query exclusion: only jobs launched AFTER the work unit began are
+ *   reusable, so a new user query always starts with a fresh session.
  * - Fresh-session fallback: if the remembered session is gone or errored,
  *   the stale task_id is dropped so the native tool creates a fresh one.
  *
@@ -37,10 +46,7 @@ export interface QuerySessionReuseOptions {
   maxResumesPerQuery: number;
   estTokenCap: number;
   backgroundJobBoard: BackgroundJobStore & {
-    findReusable?: (
-      parentSessionID: string,
-      agent: string,
-    ) => { taskID: string; contextFiles?: { lineCount: number }[] } | undefined;
+    list?: (parentSessionID?: string) => unknown[];
   };
 }
 
@@ -57,6 +63,8 @@ interface WorkUnit {
   lastUserMsgId?: string;
   /** taskIDs of resumed sessions currently in flight (concurrency guard) */
   inFlight: Set<string>;
+  /** when this unit began — used to exclude pre-reset sessions from reuse */
+  createdAt: number;
 }
 
 /** Rough token estimate: ~1.3 chars per token. */
@@ -75,9 +83,52 @@ function seedTokensFromJob(
   return fileTokens + 2000; // + system prompt & prior turns baseline
 }
 
+interface BoardJobLike {
+  taskID: string;
+  agent?: string;
+  state?: string;
+  terminalState?: string;
+  terminalUnreconciled?: boolean;
+  lastUsedAt?: number;
+  updatedAt?: number;
+  launchedAt?: number;
+  contextFiles?: { lineCount: number }[];
+}
+
+/**
+ * Find the most recent COMPLETED job for an agent in this parent session.
+ *
+ * Deliberately does NOT use the board's `isReusable` semantics — foreground
+ * task jobs are never "reconciled" (see module docstring). terminalState ===
+ * 'completed' is the correct resumability signal here. Jobs launched before
+ * the work unit began are excluded so sessions never bleed across queries.
+ */
+function findCompletedJob(
+  board: unknown,
+  parentSessionID: string,
+  agentType: string,
+  minLaunchedAt = 0,
+): BoardJobLike | undefined {
+  const list = (board as { list?: (s: string) => unknown[] }).list;
+  if (typeof list !== 'function') return undefined;
+  const jobs = (list.call(board, parentSessionID) ?? []) as BoardJobLike[];
+  const candidates = jobs.filter(
+    (j) =>
+      j.agent === agentType &&
+      (j.terminalState ?? j.state) === 'completed' &&
+      j.state !== 'running' &&
+      (j.launchedAt ?? 0) >= minLaunchedAt,
+  );
+  if (candidates.length === 0) return undefined;
+  candidates.sort(
+    (a, b) => (b.lastUsedAt ?? b.updatedAt ?? 0) - (a.lastUsedAt ?? a.updatedAt ?? 0),
+  );
+  return candidates[0];
+}
+
 interface MessageLike {
   role?: string;
-  info?: { id?: string };
+  info?: { id?: string; sessionID?: string };
 }
 
 export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
@@ -88,7 +139,7 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
   function getUnit(sessionID: string): WorkUnit {
     let unit = workUnits.get(sessionID);
     if (!unit) {
-      unit = { agents: new Map(), inFlight: new Set() };
+      unit = { agents: new Map(), inFlight: new Set(), createdAt: Date.now() };
       workUnits.set(sessionID, unit);
     }
     return unit;
@@ -114,7 +165,7 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
 
     /**
      * tool.execute.before on `task`: auto-inject the remembered task_id
-     * when the subagent is allowlisted and a reusable session exists and
+     * when the subagent is allowlisted and a completed session exists that
      * is not already in flight.
      */
     'tool.execute.before': async (
@@ -135,16 +186,16 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
       if (!options.agents.includes(agentType)) return;
 
       const board = options.backgroundJobBoard;
-      if (!board || typeof board.findReusable !== 'function') return;
+      if (!board || typeof board.list !== 'function') return;
 
       const unit = getUnit(input.sessionID);
 
       // On-the-fly promotion: the board is the source of truth. The
-      // transform-hook promotion can race the job-completion signal
-      // (idle-reconcile delay), so if the unit has no state for this
-      // agent yet — or the job changed — resolve it HERE at call time.
-      const job = board.findReusable(input.sessionID, agentType);
-      if (!job) return; // no reusable session yet → fresh session
+      // transform-hook promotion can race the job-completion signal, so if
+      // the unit has no state for this agent yet — or the job changed —
+      // resolve it HERE at call time (excluding pre-unit jobs).
+      const job = findCompletedJob(board, input.sessionID, agentType, unit.createdAt);
+      if (!job) return; // no completed session yet → fresh session
 
       let st = unit.agents.get(agentType);
       if (!st || st.taskID !== job.taskID) {
@@ -202,10 +253,23 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
       output: { messages?: unknown[] },
     ): Promise<void> => {
       if (!options.enabled) return;
-      if (!input.sessionID) return;
 
       const messages = output.messages;
       if (!Array.isArray(messages) || messages.length === 0) return;
+
+      // NOTE: this hook's input carries NO sessionID — derive it from the
+      // messages themselves (same approach as task-session-manager).
+      let sessionID: string | undefined = input.sessionID;
+      if (!sessionID) {
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const info = (messages[i] as MessageLike | undefined)?.info;
+          if (info && typeof info.sessionID === 'string') {
+            sessionID = info.sessionID;
+            break;
+          }
+        }
+      }
+      if (!sessionID) return;
 
       // Find the last USER message, scanning from the end so trailing
       // injected system/assistant reminders don't mask it.
@@ -221,11 +285,11 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
       if (lastUser) {
         const userMsgId = lastUser.info?.id;
         if (userMsgId) {
-          const unit = workUnits.get(input.sessionID);
+          const unit = workUnits.get(sessionID);
           if (!unit || unit.lastUserMsgId !== userMsgId) {
             // New user message → new work unit.
-            resetUnit(input.sessionID);
-            const fresh = getUnit(input.sessionID);
+            resetUnit(sessionID);
+            const fresh = getUnit(sessionID);
             fresh.lastUserMsgId = userMsgId;
             return; // do not promote old jobs into a fresh unit
           }
@@ -234,11 +298,11 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
 
       // Promote completed jobs into the unit so subsequent calls resume them.
       const board = options.backgroundJobBoard;
-      if (!board || typeof board.findReusable !== 'function') return;
-      const unit = workUnits.get(input.sessionID);
+      if (!board || typeof board.list !== 'function') return;
+      const unit = workUnits.get(sessionID);
       if (!unit) return;
       for (const agentType of options.agents) {
-        const job = board.findReusable(input.sessionID, agentType);
+        const job = findCompletedJob(board, sessionID, agentType, unit.createdAt);
         if (!job) continue;
         const st = unit.agents.get(agentType);
         if (!st || st.taskID !== job.taskID) {
