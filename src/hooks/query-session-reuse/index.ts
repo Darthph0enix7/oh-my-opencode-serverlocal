@@ -135,15 +135,20 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
       if (!options.agents.includes(agentType)) return;
 
       const board = options.backgroundJobBoard;
-      if (!board || typeof board.findReusable !== 'function') return;
+      if (!board || typeof board.findReusable !== 'function') {
+        console.error('[qsr] no board');
+        return;
+      }
 
       const unit = getUnit(input.sessionID);
+      console.error('[qsr] before-hook', { agentType, unitSize: unit.agents.size });
 
       // On-the-fly promotion: the board is the source of truth. The
       // transform-hook promotion can race the job-completion signal
       // (idle-reconcile delay), so if the unit has no state for this
       // agent yet — or the job changed — resolve it HERE at call time.
       const job = board.findReusable(input.sessionID, agentType);
+      console.error('[qsr] findReusable', job ? job.taskID : 'none');
       if (!job) return; // no reusable session yet → fresh session
 
       let st = unit.agents.get(agentType);
