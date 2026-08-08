@@ -8,6 +8,16 @@ Slim only intercepts `apply_patch` before the native tool runs. It rewrites reco
 
 ---
 
+## Oracle Session (persistent reviews)
+
+| Tool | Description |
+|------|-------------|
+| `oracle_session` | Consult the oracle agent in a PERSISTENT session — one conversation per user query. The oracle remembers its previous verdicts across repeated reviews within a task. |
+
+`oracle_session` is the single way to consult the oracle (never `task(subagent_type=oracle)`). Lifecycle: a fresh oracle session is created at the start of each user query, auto-continues within it, and resets automatically on the next user message (or via `/fresh`). Returns `{ response, session_id, prompts }`; pass `session_id` to explicitly continue. Bounded: max 10 prompts / 50K estimated tokens per chain, and the session is deleted on reset.
+
+---
+
 ## Web Fetch
 
 Fetch remote pages with content extraction tuned for docs/static sites.
