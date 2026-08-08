@@ -216,26 +216,6 @@ export const BackgroundJobsConfigSchema = z.object({
 
 export type BackgroundJobsConfig = z.infer<typeof BackgroundJobsConfigSchema>;
 
-/**
- * Query-scoped subagent session reuse.
- *
- * When the orchestrator calls a subagent (e.g. the oracle) multiple times
- * within ONE user query, the plugin automatically resumes the same subagent
- * session via task_id — the subagent retains its previous verdicts/context.
- * The work unit resets on the next user message, so sessions never bleed
- * across queries and context cost stays bounded per query.
- */
-export const SessionReuseConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  /** Subagent types that get auto-resumed (conversational/review agents only). */
-  agents: z.array(z.string()).default(['oracle']),
-  /** Max auto-resumes per agent per work unit before forcing a fresh session. */
-  maxResumesPerQuery: z.number().int().min(0).max(20).default(3),
-  /** Estimated token cap per reused session (~chars/1.3). Fresh session beyond. */
-  estTokenCap: z.number().int().min(1000).max(500000).default(40000),
-});
-
-export type SessionReuseConfig = z.infer<typeof SessionReuseConfigSchema>;
 
 export const FailoverConfigSchema = z
   .object({
@@ -433,7 +413,6 @@ export const PluginConfigSchema = z
     websearch: WebsearchConfigSchema.optional(),
     interview: InterviewConfigSchema.optional(),
     backgroundJobs: BackgroundJobsConfigSchema.optional(),
-    sessionReuse: SessionReuseConfigSchema.optional(),
     fallback: FailoverConfigSchema.optional(),
     companion: CompanionConfigSchema.optional(),
     acpAgents: AcpAgentsConfigSchema.optional(),

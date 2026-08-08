@@ -9,13 +9,13 @@ State Management:
 
 const TIER_1_VARIANTS = [
   `**TIER 1 (Supervised) - IMMEDIATE NEXT STEP:**
-Before writing any code, formulate a plan and invoke the \`task\` tool to send it to \`the oracle agent\` for review. 
+Before writing any code, formulate a plan and consult the oracle via the \`oracle_session\` tool. 
 Note: the oracle agent is a sparring partner, not an absolute dictator. If you disagree with its critique, push back and debate it.
 Do not proceed with implementation until you and \`the oracle agent\` align on the plan. 
 At the end of the task, you must invoke \`the oracle agent\` again for a final code review.`,
 
   `**TIER 1 PROTOCOL - ACTION REQUIRED:**
-Stop. Draft your technical approach and send it to \`the oracle agent\` via the \`task\` tool.
+Stop. Draft your technical approach and consult \`the oracle agent\` via the \`oracle_session\` tool.
 Critically evaluate the oracle agent's feedback—do not blindly accept bad suggestions. You are the lead.
 Once the plan is solid, implement it. Call \`the oracle agent\` one last time when you are finished for a sanity check.`,
 
@@ -27,7 +27,7 @@ Implement only after reaching an agreement, and get a final code review at the e
 
 const TIER_2_VARIANTS = [
   `**TIER 2 (High Performance) - IMMEDIATE NEXT STEP:**
-Before writing any code, formulate a detailed technical plan and invoke the \`task\` tool to send it to \`the oracle agent\`.
+Before writing any code, formulate a detailed technical plan and consult \`the oracle agent\` via the \`oracle_session\` tool.
 You are STRICTLY FORBIDDEN from writing implementation code until \`the oracle agent\` reviews the plan.
 *Crucial:* You do not have to blindly implement what the oracle agent says. If you disagree, debate it!
 During implementation, you must frequently loop back to \`the oracle agent\`. You cannot finish this task until \`the oracle agent\` explicitly outputs "VERDICT: SHIP IT".`,

@@ -37,7 +37,6 @@ import {
   createTaskSessionManagerHook,
   createTierCommandsHook,
   createMaintenanceCommandHook,
-  createQuerySessionReuseHook,
   ForegroundFallbackManager,
   SessionLifecycle,
 } from './hooks';
@@ -160,7 +159,6 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   let applyPatchHook: ReturnType<typeof createApplyPatchHook>;
   let tierCommandsHook: ReturnType<typeof createTierCommandsHook>;
   let maintenanceCommandHook: ReturnType<typeof createMaintenanceCommandHook>;
-  let querySessionReuseHook: ReturnType<typeof createQuerySessionReuseHook>;
   let reflectCommandHook: ReturnType<typeof createReflectCommandHook>;
   let loopCommandHook: ReturnType<typeof createLoopCommandHook>;
   let taskSessionManagerHook: ReturnType<typeof createTaskSessionManagerHook>;
@@ -345,17 +343,6 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       isFallbackInProgress: (sessionID) =>
         foregroundFallback.isFallbackInProgress(sessionID),
       coordinator: sessionLifecycle,
-    });
-
-    // Query-scoped subagent session reuse: auto-resume the oracle (etc.)
-    // within one user query so repeated reviews share context. Resets on
-    // the next user message. Reads the board directly (read-only).
-    querySessionReuseHook = createQuerySessionReuseHook({
-      enabled: config.sessionReuse?.enabled !== false,
-      agents: config.sessionReuse?.agents ?? ['oracle'],
-      maxResumesPerQuery: config.sessionReuse?.maxResumesPerQuery ?? 3,
-      estTokenCap: config.sessionReuse?.estTokenCap ?? 40000,
-      backgroundJobBoard,
     });
 
     // Initialize hooks and wrapPostToolHook helper for error isolation
@@ -890,8 +877,8 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       reflectCommandHook.registerCommand(opencodeConfig);
       loopCommandHook.registerCommand(opencodeConfig);
       presetManager.registerCommand(opencodeConfig);
-      // /fresh — force-reset the query-scoped subagent session pool mid-task
-      if (querySessionReuseHook) {
+      // /fresh — force-reset the oracle session pool mid-task
+      {
         registerCommandHook(
           opencodeConfig,
           'fresh',
@@ -1047,7 +1034,6 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         if (sessionID) {
           sessionAgentMap.delete(sessionID);
           sessionDirectories.delete(sessionID);
-          querySessionReuseHook?.resetUnit(sessionID);
           oracleSessionTool?.resetForSession(sessionID);
         }
       }
@@ -1056,12 +1042,6 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
     'tool.execute.before': async (input, output) => {
       await applyPatch['tool.execute.before'](input as never, output as never);
       await taskSessionManagerHook['tool.execute.before'](
-        input as never,
-        output as never,
-      );
-      // Auto-resume runs AFTER task-session-manager so its task_id
-      // normalization has already happened (valid IDs pass through).
-      await querySessionReuseHook['tool.execute.before'](
         input as never,
         output as never,
       );
@@ -1123,8 +1103,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       );
 
       // /fresh — reset query-scoped session reuse for this session
-      if (input.command === 'fresh' && querySessionReuseHook) {
-        querySessionReuseHook.resetUnit(input.sessionID);
+      if (input.command === 'fresh') {
         oracleSessionTool?.resetForSession(input.sessionID);
         (output as { parts: Array<{ type: string; text?: string }> }).parts = [
           createInternalAgentTextPart(
@@ -1267,10 +1246,6 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         typedOutput as never,
       );
       await filterAvailableSkills['experimental.chat.messages.transform'](
-        input as never,
-        typedOutput as never,
-      );
-      await querySessionReuseHook['experimental.chat.messages.transform'](
         input as never,
         typedOutput as never,
       );

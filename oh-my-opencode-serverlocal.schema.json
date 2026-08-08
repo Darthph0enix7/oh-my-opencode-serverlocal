@@ -1065,36 +1065,6 @@
         }
       }
     },
-    "sessionReuse": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "agents": {
-          "default": [
-            "oracle"
-          ],
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "maxResumesPerQuery": {
-          "default": 3,
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 20
-        },
-        "estTokenCap": {
-          "default": 40000,
-          "type": "integer",
-          "minimum": 1000,
-          "maximum": 500000
-        }
-      }
-    },
     "fallback": {
       "type": "object",
       "properties": {
