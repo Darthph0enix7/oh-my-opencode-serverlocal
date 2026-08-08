@@ -18,6 +18,19 @@ Slim only intercepts `apply_patch` before the native tool runs. It rewrites reco
 
 ---
 
+## Roundtable (multi-model debate)
+
+Provided by the `opencode-roundtable` plugin. See that plugin's README for full parameter reference.
+
+| Tool | Description |
+|------|-------------|
+| `roundtable` | Adversarial multi-perspective DEBATE — 3 debaters (skeptic, pragmatist, architect) cross-examine each other across rounds; a critic scores consensus and synthesizes a council report with dissents. Use for trade-off evaluation and decisions. |
+| `chorus` | Constructive multi-model BRAINSTORMING — 3 creative lenses (visionary, experiencer, integrator) build on each other's ideas; a curator dedupes, groups themes, spots gems, and detects plateau. Use to EXPAND a vague vision into a menu of feature options. |
+
+Both share the same engine: persistent per-participant sessions (deleted on completion), abort handling (user cancel stops everything via AbortSignal + `session.abort()`), hidden round limits, and mode presets (light/standard/heavy/free). Stop conditions: roundtable = consensus/quality/stall; chorus = idea plateau (< `minNewIdeas` per round).
+
+---
+
 ## Web Fetch
 
 Fetch remote pages with content extraction tuned for docs/static sites.

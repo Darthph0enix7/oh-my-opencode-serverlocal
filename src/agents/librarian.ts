@@ -29,7 +29,8 @@ export function createLibrarianAgent(
   return {
     name: 'librarian',
     displayName: 'Librarian',
-    description: 'Exhaustive external knowledge, web research, and API documentation',
+    description:
+      'Exhaustive external knowledge, web research, and API documentation',
     config: {
       model,
       temperature: 0.1,

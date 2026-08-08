@@ -142,7 +142,7 @@ Osmani's framework identifies five primitives that compose a loop, plus durable 
 | Success criteria | Yes (test, build, lint) | Yes | Yes (designed: test, build, lint, fileExists, command, oracle, observer) |
 | Iteration cap | Yes | Yes | Yes (designed) |
 | No-progress detection | Yes | Yes | Yes (designed: totalErrors, timeoutCount) |
-| Escalation to human | Yes | Yes | Yes (designed: @council at Layer 0) |
+| Escalation to human | Yes | Yes | Yes (designed: roundtable/chorus at Layer 0) |
 | Cost budgeting | Limited | Limited | Yes (designed) |
 
 **Verdict:** Claude Code and Codex have working loop primitives. OpenCode's loop engine is fully designed with a 3-layer architecture (Orchestrator -> LoopEngine -> Specialists) but not yet implemented.
@@ -229,7 +229,7 @@ The planned loop engineering runtime includes:
 - **SuccessCriterion** routing (test, build, lint, fileExists, command, oracle, observer)
 - **Convergence signals** (totalErrors, timeoutCount, lastErrorAt)
 - **.loop-history.md** context compaction
-- **Escalation via @council** at Layer 0 only
+- **Escalation via roundtable/chorus** at Layer 0 only
 - **Phased rollout:** Phase 1 (runtime engine) -> Phase 2 (loop skill) -> Phase 3 (routine integration) -> Phase 4 (triggers) -> Phase 5 (persistent memory)
 
 ### The Gap

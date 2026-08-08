@@ -23,24 +23,27 @@ export function createMaintenanceCommandHook(): {
 } {
   return {
     registerCommand: (opencodeConfig) => {
-      registerCommandHook(opencodeConfig, 'maintenance', 'Run a repository maintenance and cleanup routine', 'Maintenance');
+      registerCommandHook(
+        opencodeConfig,
+        'maintenance',
+        'Run a repository maintenance and cleanup routine',
+        'Maintenance',
+      );
     },
 
     handleCommandExecuteBefore: async (input, output) => {
       if (input.command !== 'maintenance') return;
 
       output.parts.length = 0;
-      
-      const parts = [
-        MAINTENANCE_PROMPT
-      ];
-      
+
+      const parts = [MAINTENANCE_PROMPT];
+
       const task = input.arguments.trim();
       if (task) {
         parts.push('', `**Specific Maintenance Task:**\n${task}`);
       }
-      
+
       output.parts.push({ type: 'text', text: parts.join('\n') });
-    }
+    },
   };
 }

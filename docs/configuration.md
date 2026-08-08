@@ -9,9 +9,9 @@ Complete reference for all configuration files and options in oh-my-opencode-sli
 | File | Purpose |
 |------|---------|
 | `~/.config/opencode/opencode.json` | OpenCode core settings (plugin registration, providers) |
-| `~/.config/opencode/oh-my-opencode-slim.json` | Plugin settings - agents, multiplexer, MCPs, council |
-| `~/.config/opencode/oh-my-opencode-slim.jsonc` | Same, but with JSONC (comments + trailing commas). Takes precedence over `.json` if both exist |
-| `.opencode/oh-my-opencode-slim.json` | Project-local overrides (optional, higher precedence than user config) |
+| `~/.config/opencode/oh-my-opencode-serverlocal.json` | Plugin settings - agents, multiplexer, MCPs |
+| `~/.config/opencode/oh-my-opencode-serverlocal.jsonc` | Same, but with JSONC (comments + trailing commas). Takes precedence over `.json` if both exist |
+| `.opencode/oh-my-opencode-serverlocal.json` | Project-local overrides (optional, higher precedence than user config) |
 
 > **💡 JSONC recommended:** Use the `.jsonc` extension to add comments and trailing commas. If both `.jsonc` and `.json` exist, `.jsonc` takes precedence.
 
@@ -29,7 +29,7 @@ OH_MY_OPENCODE_SLIM_DISABLE=1 opencode
 If OmO-slim detects an invalid plugin config for the current project, the TUI sidebar shows a warning. Run `oh-my-opencode-slim doctor` from your project root for full diagnostics.
 
 The TUI sidebar uses the compact layout by default. Set `compactSidebar` to
-`false` in `oh-my-opencode-slim.jsonc` to use the expanded layout:
+`false` in `oh-my-opencode-serverlocal.jsonc` to use the expanded layout:
 
 ```jsonc
 {
@@ -154,14 +154,7 @@ Presets can also be switched at runtime without restarting using the `/preset` c
 | `fallback.maxRetries` | number | `3` | Maximum failover attempts before giving up |
 | `fallback.runtimeOverride` | boolean | `true` | Allow per-call model overrides to bypass the fallback chain |
 | `fallback.retry_on_empty` | boolean | `true` | Treat silent empty provider responses (0 tokens) as failures and retry. Set `false` to accept empty responses |
-| `council.presets` | object | - | **Required if using council.** Named councillor presets |
-| `council.presets.<name>.<councillor>.model` | string | - | Councillor model |
-| `council.presets.<name>.<councillor>.variant` | string | - | Councillor variant |
-| `council.presets.<name>.<councillor>.prompt` | string | - | Optional role guidance for the councillor |
-| `council.default_preset` | string | `"default"` | Default preset when none is specified |
-| `council.timeout` | number | `180000` | Per-councillor timeout (ms) |
-| `council.councillor_execution_mode` | string | `"parallel"` | Run councillors in `parallel` or `serial`; use `serial` for single-model setups |
-| `council.councillor_retries` | number | `3` | Max retries per councillor on empty provider response (0–5) |
+| `council.*` | — | — | REMOVED in v0.1.3 — use the `roundtable` (debate) or `chorus` (brainstorm) tools instead |
 | `interview.maxQuestions` | integer | `2` | Max questions per interview round (1–10) |
 | `interview.outputFolder` | string | `"interview"` | Directory where interview markdown files are written (relative to project root) |
 | `interview.autoOpenBrowser` | boolean | `true` | Automatically open the interview UI in your default browser during interactive runs; suppressed in tests and CI |
@@ -225,12 +218,13 @@ subprocess.
 
 ### Council configuration note
 
-- The **Council agent model** is configured like any other agent, for example in
-  `presets.<name>.council.model`.
-- The **councillor models** are configured separately under
-  `council.presets.<name>.<councillor>.model`.
-- Deprecated `council.master*` fields are legacy compatibility aliases only;
-  do not use them in new configs.
+The council subsystem was **removed in v0.1.3**. Multi-model collaboration is
+provided by the `opencode-roundtable` plugin instead:
+- `roundtable` tool — adversarial multi-perspective debate (decisions)
+- `chorus` tool — constructive multi-model brainstorming (ideation)
+- `oracle_session` tool — persistent Oracle review conversations
+
+Neither requires any `council.*` config.
 
 ### Manual Update Mode
 

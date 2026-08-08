@@ -257,7 +257,7 @@ This should apply on the next OpenCode run; restart OpenCode if you need it imme
 
 ## Skills Assignment
 
-Control which skills each agent can use in `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc`):
+Control which skills each agent can use in `~/.config/opencode/oh-my-opencode-serverlocal.json` (or `.jsonc`):
 
 | Syntax | Meaning |
 |--------|---------|

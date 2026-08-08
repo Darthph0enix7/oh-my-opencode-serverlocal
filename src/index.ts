@@ -31,17 +31,17 @@ import {
   createFilterAvailableSkillsHook,
   createJsonErrorRecoveryHook,
   createLoopCommandHook,
+  createMaintenanceCommandHook,
   createPhaseReminderHook,
   createPostFileToolNudgeHook,
   createReflectCommandHook,
   createTaskSessionManagerHook,
   createTierCommandsHook,
-  createMaintenanceCommandHook,
   ForegroundFallbackManager,
   SessionLifecycle,
 } from './hooks';
-import { processImageAttachments } from './hooks/image-hook';
 import { registerCommandHook } from './hooks/command-hook-utils';
+import { processImageAttachments } from './hooks/image-hook';
 import { isMessageWithParts, type MessageWithParts } from './hooks/types';
 import { createInterviewManager } from './interview';
 import { createBuiltinMcps } from './mcp';
@@ -431,7 +431,10 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       ...cancelTaskTools,
       ...acpRunTools,
       ...(oracleSessionTool
-        ? ({ oracle_session: oracleSessionTool.tool } as unknown as Record<string, ToolDefinition>)
+        ? ({ oracle_session: oracleSessionTool.tool } as unknown as Record<
+            string,
+            ToolDefinition
+          >)
         : {}),
       webfetch,
       ast_grep_search,
@@ -776,7 +779,8 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       const tuiAgentModels: Record<string, string> = {};
       const tuiAgentVariants: Record<string, string> = {};
       for (const agentDef of agentDefs) {
-        if (agentDef.name === 'councillor' || agentDef.name === 'council') continue;
+        if (agentDef.name === 'councillor' || agentDef.name === 'council')
+          continue;
 
         const entry = configAgent[agentDef.name] as
           | Record<string, unknown>
@@ -877,15 +881,12 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       reflectCommandHook.registerCommand(opencodeConfig);
       loopCommandHook.registerCommand(opencodeConfig);
       presetManager.registerCommand(opencodeConfig);
-      // /fresh — force-reset the oracle session pool mid-task
-      {
-        registerCommandHook(
-          opencodeConfig,
-          'fresh',
-          'Force a fresh subagent session (reset query-scoped session reuse)',
-          'Fresh session',
-        );
-      }
+      registerCommandHook(
+        opencodeConfig,
+        'fresh',
+        'Force a fresh subagent session (reset query-scoped session reuse)',
+        'Fresh session',
+      );
     },
 
     event: async (input) => {

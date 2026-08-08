@@ -24,13 +24,13 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-opencode-slim and 
 | `oracle` | none |
 | `explorer` | none |
 | `fixer` | none |
- | `councillor` | none |
+
 
 ---
 
 ## Configuring MCP Access
 
-Control which MCPs each agent can use via the `mcps` array in your preset config (`~/.config/opencode/oh-my-opencode-slim.json` or `.jsonc`):
+Control which MCPs each agent can use via the `mcps` array in your preset config (`~/.config/opencode/oh-my-opencode-serverlocal.json` or `.jsonc`):
 
 | Syntax | Meaning |
 |--------|---------|

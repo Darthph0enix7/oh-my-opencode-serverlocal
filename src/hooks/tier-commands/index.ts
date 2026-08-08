@@ -22,7 +22,7 @@ Once the plan is solid, implement it. Call \`the oracle agent\` one last time wh
   `**WORKFLOW LOCK: TIER 1 ENGAGED:**
 Your first step is an architectural review with \`the oracle agent\`. 
 Maintain your own agency. If the oracle agent suggests something flawed, explain why and suggest a better way. 
-Implement only after reaching an agreement, and get a final code review at the end.`
+Implement only after reaching an agreement, and get a final code review at the end.`,
 ];
 
 const TIER_2_VARIANTS = [
@@ -40,7 +40,7 @@ You must iterate and spar with the oracle agent until issues are resolved and th
   `**WORKFLOW LOCK: TIER 2 ENGAGED:**
 Stop and call \`the oracle agent\` with your plan. Treat the oracle agent as a rigorous sparring partner. 
 Think for yourself and challenge bad suggestions. Do not treat the oracle agent's word as absolute truth.
-The loop continues back-and-forth until alignment is reached and the oracle agent formally clears you with "VERDICT: SHIP IT".`
+The loop continues back-and-forth until alignment is reached and the oracle agent formally clears you with "VERDICT: SHIP IT".`,
 ];
 
 const TIER_3_VARIANTS = [
@@ -56,7 +56,7 @@ You are the lead—don't treat reviews as absolute truth, but as inputs to your 
 
   `**WORKFLOW LOCK: TIER 3 ENGAGED:**
 Use the \`roundtable\` tool to resolve architectural ambiguity and expand the user's vision.
-Loop in \`the oracle agent\` for code reviews, but explicitly push back if their suggestions introduce unnecessary complexity or flaws. You are ultimately in charge of the implementation quality.`
+Loop in \`the oracle agent\` for code reviews, but explicitly push back if their suggestions introduce unnecessary complexity or flaws. You are ultimately in charge of the implementation quality.`,
 ];
 
 function getRandomVariant(variants: string[]): string {
@@ -81,7 +81,7 @@ function getTierPrompt(tier: number, task?: string): string {
     '',
     COMMON_REQUIREMENTS,
   ];
-  
+
   if (task) {
     parts.push('', `**USER TASK:**\n${task}`);
   }
@@ -100,9 +100,24 @@ export function createTierCommandsHook(): {
 
   return {
     registerCommand: (opencodeConfig) => {
-      registerCommandHook(opencodeConfig, 'tier1', 'Start a Tier 1 session', 'Tier 1');
-      registerCommandHook(opencodeConfig, 'tier2', 'Start a Tier 2 session', 'Tier 2');
-      registerCommandHook(opencodeConfig, 'tier3', 'Start a Tier 3 session', 'Tier 3');
+      registerCommandHook(
+        opencodeConfig,
+        'tier1',
+        'Start a Tier 1 session',
+        'Tier 1',
+      );
+      registerCommandHook(
+        opencodeConfig,
+        'tier2',
+        'Start a Tier 2 session',
+        'Tier 2',
+      );
+      registerCommandHook(
+        opencodeConfig,
+        'tier3',
+        'Start a Tier 3 session',
+        'Tier 3',
+      );
     },
 
     handleCommandExecuteBefore: async (input, output) => {
@@ -121,6 +136,6 @@ export function createTierCommandsHook(): {
 
       const tierNum = parseInt(input.command.replace('tier', ''), 10);
       output.parts.push({ type: 'text', text: getTierPrompt(tierNum, task) });
-    }
+    },
   };
 }

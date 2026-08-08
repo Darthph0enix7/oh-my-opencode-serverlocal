@@ -381,7 +381,11 @@ async function runInstall(config: InstallConfig): Promise<number> {
     if (!companionResult.success) config.companion = 'no';
   }
 
-  printStep(step++, totalSteps, 'Writing oh-my-opencode-serverlocal configuration...');
+  printStep(
+    step++,
+    totalSteps,
+    'Writing oh-my-opencode-serverlocal configuration...',
+  );
   if (config.dryRun) {
     const liteConfig = generateLiteConfig(config);
     printInfo('Dry run mode - configuration that would be written:');

@@ -4,7 +4,7 @@ The desktop companion app provides a floating status overlay showing running and
 
 ## How to Enable in Configuration
 
-You can enable the companion by adding a `companion` section to your setting configuration file (`~/.config/opencode/oh-my-opencode-slim.json` or `.opencode/oh-my-opencode-slim.json`):
+You can enable the companion by adding a `companion` section to your setting configuration file (`~/.config/opencode/oh-my-opencode-serverlocal.json` or `.opencode/oh-my-opencode-serverlocal.json`):
 
 ```jsonc
 {

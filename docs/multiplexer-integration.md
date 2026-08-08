@@ -85,7 +85,7 @@ omos() {
 
 ### 1. Enable the multiplexer
 
-Edit `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc`):
+Edit `~/.config/opencode/oh-my-opencode-serverlocal.json` (or `.jsonc`):
 
 **Auto-detect (recommended):**
 

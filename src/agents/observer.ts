@@ -29,7 +29,8 @@ export function createObserverAgent(
   return {
     name: 'observer',
     displayName: 'Observer',
-    description: 'Visual analysis, UI mockup translation, and screenshot evaluation',
+    description:
+      'Visual analysis, UI mockup translation, and screenshot evaluation',
     config: {
       model,
       temperature: 0.1,

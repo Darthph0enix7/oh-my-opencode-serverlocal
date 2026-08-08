@@ -12,7 +12,8 @@ import { findLatestUserMessage, type MessagePart } from '../types';
 
 export { PHASE_REMINDER };
 
-export const PHASE_REMINDER_METADATA_KEY = 'oh-my-opencode-serverlocal.phaseReminder';
+export const PHASE_REMINDER_METADATA_KEY =
+  'oh-my-opencode-serverlocal.phaseReminder';
 
 export function hasPhaseReminder(part: MessagePart): boolean {
   return (

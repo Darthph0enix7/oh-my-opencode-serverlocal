@@ -93,7 +93,9 @@ function loadConfigFromPath(
         formatted: result.error.format(),
       });
       if (!options?.silent) {
-        console.warn(`[oh-my-opencode-serverlocal] Invalid config at ${configPath}:`);
+        console.warn(
+          `[oh-my-opencode-serverlocal] Invalid config at ${configPath}:`,
+        );
         console.warn(result.error.format());
       }
       return null;

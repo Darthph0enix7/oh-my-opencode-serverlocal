@@ -216,7 +216,6 @@ export const BackgroundJobsConfigSchema = z.object({
 
 export type BackgroundJobsConfig = z.infer<typeof BackgroundJobsConfigSchema>;
 
-
 export const FailoverConfigSchema = z
   .object({
     enabled: z.boolean().default(true),

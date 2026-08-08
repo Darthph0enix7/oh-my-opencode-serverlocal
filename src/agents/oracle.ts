@@ -36,7 +36,8 @@ export function createOracleAgent(
   return {
     name: 'oracle',
     displayName: 'Oracle',
-    description: 'Senior supervisor, architecture, deep debugging, and rigorous review',
+    description:
+      'Senior supervisor, architecture, deep debugging, and rigorous review',
     config: {
       model,
       temperature: 0.1,

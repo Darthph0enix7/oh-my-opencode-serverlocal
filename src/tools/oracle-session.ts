@@ -21,9 +21,9 @@
  * - Safety rails: max prompts per unit, estimated token cap.
  */
 
+import type { ToolContext } from '@opencode-ai/plugin';
 import type { OpencodeClient } from '@opencode-ai/sdk';
 import { z } from 'zod';
-import type { ToolContext } from '@opencode-ai/plugin';
 
 export interface OracleSessionToolOptions {
   client: OpencodeClient;

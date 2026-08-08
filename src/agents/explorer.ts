@@ -29,7 +29,8 @@ export function createExplorerAgent(
   return {
     name: 'explorer',
     displayName: 'Explorer',
-    description: 'Sophisticated codebase mapping, pattern finding, and context compression',
+    description:
+      'Sophisticated codebase mapping, pattern finding, and context compression',
     config: {
       model,
       temperature: 0.1,

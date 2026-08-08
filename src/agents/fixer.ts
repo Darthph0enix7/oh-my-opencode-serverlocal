@@ -31,7 +31,8 @@ export function createFixerAgent(
   return {
     name: 'fixer',
     displayName: 'Fixer',
-    description: 'Bounded implementation, parallel execution, and localized bug detection',
+    description:
+      'Bounded implementation, parallel execution, and localized bug detection',
     config: {
       model,
       temperature: 0.1,

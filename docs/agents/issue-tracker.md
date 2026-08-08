@@ -19,7 +19,7 @@ Infer the repo from `git remote -v` — `gh` does this automatically when run in
 
 **Scope: category labels only.** External PRs get a `bug` or `enhancement` category label based on the PR description or linked issue. They do **not** enter the triage state transitions and are **never** auto-closed during triage.
 
-Guardrails (per council review):
+Guardrails:
 - Apply only `bug` or `enhancement` to PRs. Do not apply state labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`).
 - Never apply `good-to-code` to PRs — they are already code; the label is noise.
 - Never auto-close external PRs during triage. Closure stays in the review flow / maintainer decision.

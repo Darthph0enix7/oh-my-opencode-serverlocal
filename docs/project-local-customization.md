@@ -5,7 +5,7 @@ This document describes how to configure and customize oh-my-opencode-slim on a 
 ## Security & Trust Boundary Warning
 
 > ⚠️ **IMPORTANT SECURITY NOTICE**
-> Because project-local configuration files (`.opencode/oh-my-opencode-slim.jsonc`) and prompt templates (`.opencode/oh-my-opencode-slim/`) are loaded automatically when you open and work in a project directory, they can modify agent behaviors, enable/disable tools, and grant extra model access permissions.
+> Because project-local configuration files (`.opencode/oh-my-opencode-serverlocal.jsonc`) and prompt templates (`.opencode/oh-my-opencode-slim/`) are loaded automatically when you open and work in a project directory, they can modify agent behaviors, enable/disable tools, and grant extra model access permissions.
 > **Only work in and run OpenCode within repositories you explicitly trust.**
 
 ---
@@ -14,7 +14,7 @@ This document describes how to configure and customize oh-my-opencode-slim on a 
 
 | Feature | Scope / Location | Description |
 |---|---|---|
-| **Configuration file** | `.opencode/oh-my-opencode-slim.json[c]` | Project-level configuration file that overrides global user settings, merging presets, agent profiles, and multiplexer integration. |
+| **Configuration file** | `.opencode/oh-my-opencode-serverlocal.json[c]` | Project-level configuration file that overrides global user settings, merging presets, agent profiles, and multiplexer integration. |
 | **Custom agents** | `agents` configuration block | Define new specialized agents by keying them under `agents.<custom-name>` with required `model`, custom system `prompt`, and optional routing guidance. |
 | **Built-in prompt overrides** | `.opencode/oh-my-opencode-slim/<agent>.md` | Completely override the built-in system prompt for any agent (e.g. `oracle.md`, `explorer.md`, `orchestrator.md`, or custom agents). |
 | **Append prompts** | `.opencode/oh-my-opencode-slim/<agent>_append.md` | Append additional rules or guidelines to the existing base (inline or default built-in) prompt without overriding it completely. |
@@ -108,7 +108,7 @@ Every non-orchestrator agent (both built-in and custom) can define an `orchestra
 
 ### Overriding Oracle prompt in active preset
 
-Your project has the config `.opencode/oh-my-opencode-slim.jsonc`:
+Your project has the config `.opencode/oh-my-opencode-serverlocal.jsonc`:
 
 ```json
 {

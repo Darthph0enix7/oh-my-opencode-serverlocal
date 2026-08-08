@@ -120,8 +120,8 @@ Discuss before starting any:
 
 | Area | What we want |
 |------|--------------|
-| Orchestrator | Custom debate-aware routing — see if we want to integrate @roundtable |
-| Council | Custom councillor roles (skeptic/pragmatist/architect) replacing the stock @council flow |
+| Orchestrator | Debate + brainstorming routing — roundtable + chorus tool integration is DONE; oracle_session for persistent Oracle reviews |
+| Council | REMOVED in v0.1.3 — do NOT reintroduce council agents, tools, or commands; roundtable (debate) + chorus (brainstorm) replace it |
 | Hooks | Drop hooks we don't use, add serverlocal-specific ones |
 | Skills | Replace `oh-my-opencode-slim` skill with `serverlocal` skill pointing at our customizations |
 | Commands | Reorganize `/preset`-style commands to match our dotfiles workflow |

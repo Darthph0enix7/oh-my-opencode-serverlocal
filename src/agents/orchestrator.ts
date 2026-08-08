@@ -56,11 +56,18 @@ const AGENT_DESCRIPTIONS: Record<string, string> = {
 - **Delegate when:** Simple implementations, parallelizing work across multiple folders/files.`,
 
   roundtable: `roundtable tool
-- Lane: Multi-model adversarial debate, ideation, and complex technical planning.
+- Lane: Multi-model adversarial debate and high-stakes decision analysis.
 - Role: Launches a structured round-table debate with 3 independent debaters (skeptic, pragmatist, architect) and a critic.
-- Capabilities: Creative ideation, feature expansion, non-technical vision refinement, high-stakes trade-off analysis.
-- **Delegate when:** User wants to expand their vision, needs creative ideas, feature suggestions, or when tech decisions are highly ambiguous.
+- Capabilities: Trade-off evaluation, technical decision-making, consensus-seeking with honest dissent, complex planning review.
+- **Delegate when:** User faces a real decision between options, wants trade-offs analyzed, or asks for a debate.
 - **How to call:** \`roundtable({ query: "...", maxRounds: 5 })\`.`,
+
+  chorus: `chorus tool
+- Lane: Constructive multi-model creative brainstorming.
+- Role: Launches a cooperative brainstorming session with 3 creative lenses (visionary, experiencer, integrator) and a curator.
+- Capabilities: Creative ideation, feature expansion, vague-vision refinement, "what else could this be" discovery, idea harvesting.
+- **Delegate when:** User has a vague idea or half-formed vision and wants the feature space EXPANDED — not decided. Turns a seed into a menu of themes, gems, and buildable-now vs moonshot directions.
+- **How to call:** \`chorus({ query: "...", maxRounds: 4 })\`.`,
 
   observer: `observer
 - Lane: Visual/media analysis.
@@ -129,7 +136,8 @@ export function createOrchestratorAgent(
 
   const definition: AgentDefinition = {
     name: 'orchestrator',
-    description: 'Master Orchestrator. Operates autonomously by default. Uses Tiers 1-3 when asked. Conducts interviews for vague tasks.',
+    description:
+      'Master Orchestrator. Operates autonomously by default. Uses Tiers 1-3 when asked. Conducts interviews for vague tasks.',
     config: {
       temperature: 0.1,
       prompt,

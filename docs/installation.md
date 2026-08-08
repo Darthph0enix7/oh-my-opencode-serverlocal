@@ -81,10 +81,10 @@ OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true opencode
 
 ### Non-Destructive Behavior
 
-By default, the installer is non-destructive. If an `oh-my-opencode-slim.json` configuration file already exists, the installer will **not** overwrite it. Instead, it will display a message:
+By default, the installer is non-destructive. If an `oh-my-opencode-serverlocal.json` configuration file already exists, the installer will **not** overwrite it. Instead, it will display a message:
 
 ```
-[i] Configuration already exists at ~/.config/opencode/oh-my-opencode-slim.json. Use --reset to overwrite.
+[i] Configuration already exists at ~/.config/opencode/oh-my-opencode-serverlocal.json. Use --reset to overwrite.
 ```
 
 To force overwrite of your existing configuration, use the `--reset` flag:
@@ -119,7 +119,7 @@ opencode auth login
 opencode models --refresh
 ```
 
-Open your generated config at `~/.config/opencode/oh-my-opencode-slim.json`
+Open your generated config at `~/.config/opencode/oh-my-opencode-serverlocal.json`
 and adjust models if needed.
 
 Then run OpenCode and verify the agents:
@@ -128,7 +128,7 @@ Then run OpenCode and verify the agents:
 ping all agents
 ```
 
-> **💡 Tip: Models are fully customizable.** The installer sets sensible defaults, but you can assign *any* model to *any* agent. Edit `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc` for comments support) to override models, adjust reasoning effort, or disable agents entirely.
+> **💡 Tip: Models are fully customizable.** The installer sets sensible defaults, but you can assign *any* model to *any* agent. Edit `~/.config/opencode/oh-my-opencode-serverlocal.json` (or `.jsonc` for comments support) to override models, adjust reasoning effort, or disable agents entirely.
 
 ### Alternative: Ask Any Coding Agent
 
@@ -186,7 +186,7 @@ The installer automatically:
 - Enables OpenCode LSP integration when no explicit `lsp` setting exists
 - Configures `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true` when approved
 - Generates agent model mappings in the same OpenCode config directory as
-  `oh-my-opencode-slim.json` (or `.jsonc`)
+  `oh-my-opencode-serverlocal.json` (or `.jsonc`)
 
 ### Step 3: Authenticate with Providers
 
@@ -211,9 +211,9 @@ Ask the user to:
 Verify all agents respond successfully.
 
 **Crucial Advice for the User:**
-- They can easily assign **different models to different agents** by editing `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc`).
+- They can easily assign **different models to different agents** by editing `~/.config/opencode/oh-my-opencode-serverlocal.json` (or `.jsonc`).
 - If they want to add a different provider later (OpenCode Go, Kimi, GitHub Copilot, ZAI), they can update this file manually. See **[Configuration Reference](configuration.md)** and the preset docs for examples.
-- Read the generated `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc`) file to understand the current configuration.
+- Read the generated `~/.config/opencode/oh-my-opencode-serverlocal.json` (or `.jsonc`) file to understand the current configuration.
 
 ---
 
@@ -227,7 +227,7 @@ bunx oh-my-opencode-slim@latest install --help
 ```
 
 Then manually create the config files at:
-- `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc`)
+- `~/.config/opencode/oh-my-opencode-serverlocal.json` (or `.jsonc`)
 
 ### Configuration Already Exists
 
@@ -299,7 +299,7 @@ If providers are not working:
 
 3. Verify your config file has the correct provider configuration:
    ```bash
-   cat ~/.config/opencode/oh-my-opencode-slim.json
+   cat ~/.config/opencode/oh-my-opencode-serverlocal.json
    ```
 
 ### Editor Validation
@@ -363,8 +363,8 @@ See the [Multiplexer Integration Guide](multiplexer-integration.md) for more det
 
 6. Remove configuration files:
    ```bash
-   rm -f ~/.config/opencode/oh-my-opencode-slim.json
-   rm -f ~/.config/opencode/oh-my-opencode-slim.json.bak
+   rm -f ~/.config/opencode/oh-my-opencode-serverlocal.json
+   rm -f ~/.config/opencode/oh-my-opencode-serverlocal.json.bak
    ```
 
 7. Remove skills installed by the installer:
