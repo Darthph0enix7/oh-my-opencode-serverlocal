@@ -111,7 +111,7 @@ ${enabledAgents}
 - Parallel Work: If simple implementation is in play and we know exactly what to change, offload parallel tasks to the fixer agent to implement and report back.
 - Main Implementation: If implementation is our main priority and focus, you do it yourself. The fixer agent is there to offload parallel tasks.
 - Background Tasks: Prefer \`task(..., background: true)\` for delegated work that can run independently. Continue orchestration only on non-overlapping work.
-- Session Reuse: Smartly reuse an available specialist session using \`task_id\`.
+- Session Reuse: When you must consult the same subagent (e.g. the oracle) multiple times for ONE user task, the plugin automatically resumes its session — call \`task\` normally, the subagent retains its previous verdicts. Use \`/fresh\` to force a new session mid-task if you want a clean review.
 
 ## Communication
 - Answer directly, no preamble. No flattery.

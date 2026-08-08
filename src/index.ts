@@ -37,10 +37,12 @@ import {
   createTaskSessionManagerHook,
   createTierCommandsHook,
   createMaintenanceCommandHook,
+  createQuerySessionReuseHook,
   ForegroundFallbackManager,
   SessionLifecycle,
 } from './hooks';
 import { processImageAttachments } from './hooks/image-hook';
+import { registerCommandHook } from './hooks/command-hook-utils';
 import { isMessageWithParts, type MessageWithParts } from './hooks/types';
 import { createInterviewManager } from './interview';
 import { createBuiltinMcps } from './mcp';
@@ -62,6 +64,7 @@ import {
   BackgroundJobBoard,
   BackgroundJobCoordinator,
   createDisplayNameMentionRewriter,
+  createInternalAgentTextPart,
   resolveRuntimeAgentName,
 } from './utils';
 import { isPluginDisabledByEnv } from './utils/env';
@@ -156,6 +159,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   let applyPatchHook: ReturnType<typeof createApplyPatchHook>;
   let tierCommandsHook: ReturnType<typeof createTierCommandsHook>;
   let maintenanceCommandHook: ReturnType<typeof createMaintenanceCommandHook>;
+  let querySessionReuseHook: ReturnType<typeof createQuerySessionReuseHook>;
   let reflectCommandHook: ReturnType<typeof createReflectCommandHook>;
   let loopCommandHook: ReturnType<typeof createLoopCommandHook>;
   let taskSessionManagerHook: ReturnType<typeof createTaskSessionManagerHook>;
@@ -339,6 +343,17 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       isFallbackInProgress: (sessionID) =>
         foregroundFallback.isFallbackInProgress(sessionID),
       coordinator: sessionLifecycle,
+    });
+
+    // Query-scoped subagent session reuse: auto-resume the oracle (etc.)
+    // within one user query so repeated reviews share context. Resets on
+    // the next user message. Reads the board directly (read-only).
+    querySessionReuseHook = createQuerySessionReuseHook({
+      enabled: config.sessionReuse?.enabled !== false,
+      agents: config.sessionReuse?.agents ?? ['oracle'],
+      maxResumesPerQuery: config.sessionReuse?.maxResumesPerQuery ?? 3,
+      estTokenCap: config.sessionReuse?.estTokenCap ?? 40000,
+      backgroundJobBoard,
     });
 
     // Initialize hooks and wrapPostToolHook helper for error isolation
@@ -867,6 +882,15 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       reflectCommandHook.registerCommand(opencodeConfig);
       loopCommandHook.registerCommand(opencodeConfig);
       presetManager.registerCommand(opencodeConfig);
+      // /fresh — force-reset the query-scoped subagent session pool mid-task
+      if (querySessionReuseHook) {
+        registerCommandHook(
+          opencodeConfig,
+          'fresh',
+          'Force a fresh subagent session (reset query-scoped session reuse)',
+          'Fresh session',
+        );
+      }
     },
 
     event: async (input) => {
@@ -1015,6 +1039,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         if (sessionID) {
           sessionAgentMap.delete(sessionID);
           sessionDirectories.delete(sessionID);
+          querySessionReuseHook?.resetUnit(sessionID);
         }
       }
     },
@@ -1022,6 +1047,12 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
     'tool.execute.before': async (input, output) => {
       await applyPatch['tool.execute.before'](input as never, output as never);
       await taskSessionManagerHook['tool.execute.before'](
+        input as never,
+        output as never,
+      );
+      // Auto-resume runs AFTER task-session-manager so its task_id
+      // normalization has already happened (valid IDs pass through).
+      await querySessionReuseHook['tool.execute.before'](
         input as never,
         output as never,
       );
@@ -1081,6 +1112,16 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         },
         output as { parts: Array<{ type: string; text?: string }> },
       );
+
+      // /fresh — reset query-scoped session reuse for this session
+      if (input.command === 'fresh' && querySessionReuseHook) {
+        querySessionReuseHook.resetUnit(input.sessionID);
+        (output as { parts: Array<{ type: string; text?: string }> }).parts = [
+          createInternalAgentTextPart(
+            'Query-scoped subagent sessions reset — next subagent call starts a fresh session.',
+          ),
+        ];
+      }
     },
 
     'chat.headers': chatHeadersHook['chat.headers'],
@@ -1216,6 +1257,10 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         typedOutput as never,
       );
       await filterAvailableSkills['experimental.chat.messages.transform'](
+        input as never,
+        typedOutput as never,
+      );
+      await querySessionReuseHook['experimental.chat.messages.transform'](
         input as never,
         typedOutput as never,
       );

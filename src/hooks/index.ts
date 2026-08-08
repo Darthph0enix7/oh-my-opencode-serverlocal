@@ -19,3 +19,4 @@ export { SessionLifecycle } from './session-lifecycle';
 export { createTaskSessionManagerHook } from './task-session-manager';
 export { createTierCommandsHook } from './tier-commands';
 export { createMaintenanceCommandHook } from './maintenance-command';
+export { createQuerySessionReuseHook } from './query-session-reuse';

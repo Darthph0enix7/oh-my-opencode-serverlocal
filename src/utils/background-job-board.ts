@@ -404,6 +404,23 @@ export class BackgroundJobBoard implements BackgroundJobStore {
     return job;
   }
 
+  /**
+   * Find the most recently used REUSABLE job for an agent type, without
+   * needing to know its taskID up front. Used by query-scoped session
+   * reuse to auto-resume the oracle's last completed session.
+   */
+  findReusable(
+    parentSessionID: string,
+    agent: string,
+  ): BackgroundJobRecord | undefined {
+    const candidates = this.list(parentSessionID).filter(
+      (job) => job.agent === agent && isReusable(job),
+    );
+    if (candidates.length === 0) return undefined;
+    candidates.sort((a, b) => b.lastUsedAt - a.lastUsedAt);
+    return candidates[0];
+  }
+
   resolveRecoverable(
     parentSessionID: string,
     taskIDOrAlias: string,
