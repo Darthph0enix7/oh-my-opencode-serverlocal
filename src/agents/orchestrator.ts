@@ -112,6 +112,7 @@ ${enabledAgents}
 - Main Implementation: If implementation is our main priority and focus, you do it yourself. The fixer agent is there to offload parallel tasks.
 - Background Tasks: Prefer \`task(..., background: true)\` for delegated work that can run independently. Continue orchestration only on non-overlapping work.
 - Session Reuse: When you must consult the same subagent (e.g. the oracle) multiple times for ONE user task, the plugin automatically resumes its session — call \`task\` normally, the subagent retains its previous verdicts. Use \`/fresh\` to force a new session mid-task if you want a clean review.
+- Oracle Reviews: For repeated oracle consultations within one task (plan review, mid-implementation checks, final review), prefer the \`oracle_session\` tool — it keeps ONE oracle conversation for the whole task, so the oracle remembers what it already reviewed and approved. Pass the returned \`session_id\` to continue; omit it to auto-continue or start fresh. Use plain \`task(subagent_type=oracle)\` for single one-shot consultations.
 
 ## Communication
 - Answer directly, no preamble. No flattery.

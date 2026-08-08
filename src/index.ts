@@ -56,6 +56,7 @@ import {
   ast_grep_search,
   createAcpRunTool,
   createCancelTaskTool,
+  createOracleSessionTool,
   createPresetManager,
   createWebfetchTool,
 } from './tools';
@@ -180,6 +181,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   let councilTools: Record<string, never> = {};
   let cancelTaskTools: ReturnType<typeof createCancelTaskTool>;
   let acpRunTools: Record<string, ReturnType<typeof createAcpRunTool>>;
+  let oracleSessionTool: ReturnType<typeof createOracleSessionTool>;
   let webfetch: ReturnType<typeof createWebfetchTool>;
   let tools: Record<string, ToolDefinition>;
   let rewriteDisplayNameMentions: ReturnType<
@@ -433,11 +435,17 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       shouldManageSession: (sessionID) =>
         sessionAgentMap.get(sessionID) === 'orchestrator',
     });
+    oracleSessionTool = createOracleSessionTool({
+      client: ctx.client,
+    });
 
     tools = {
       ...councilTools,
       ...cancelTaskTools,
       ...acpRunTools,
+      ...(oracleSessionTool
+        ? ({ oracle_session: oracleSessionTool.tool } as unknown as Record<string, ToolDefinition>)
+        : {}),
       webfetch,
       ast_grep_search,
       ast_grep_replace,
@@ -1040,6 +1048,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
           sessionAgentMap.delete(sessionID);
           sessionDirectories.delete(sessionID);
           querySessionReuseHook?.resetUnit(sessionID);
+          oracleSessionTool?.resetForSession(sessionID);
         }
       }
     },
@@ -1116,6 +1125,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       // /fresh — reset query-scoped session reuse for this session
       if (input.command === 'fresh' && querySessionReuseHook) {
         querySessionReuseHook.resetUnit(input.sessionID);
+        oracleSessionTool?.resetForSession(input.sessionID);
         (output as { parts: Array<{ type: string; text?: string }> }).parts = [
           createInternalAgentTextPart(
             'Query-scoped subagent sessions reset — next subagent call starts a fresh session.',

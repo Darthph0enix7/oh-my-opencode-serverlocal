@@ -39,6 +39,28 @@
 import { log } from '../../utils/logger';
 import { isRecord as isObjectRecord } from '../../utils/guards';
 import type { BackgroundJobStore } from '../../utils/background-job-store';
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+
+/**
+ * TEMP DIAGNOSTIC — server-side self-report. The openchamber-hosted opencode
+ * server's stdout is not journaled, so plugin logs are invisible. This writes
+ * a trace the server process itself can produce. Remove after diagnosis.
+ */
+const QSR_TRACE = join(
+  process.env.OPENCODE_CONFIG_DIR ?? join(homedir(), '.config', 'opencode'),
+  'qsr-trace.log',
+);
+function trace(msg: string): void {
+  try {
+    process.stderr.write(`[qsr] pid=${process.pid} ${msg}\n`);
+    mkdirSync(join(process.env.OPENCODE_CONFIG_DIR ?? join(homedir(), '.config', 'opencode')), { recursive: true });
+    appendFileSync(QSR_TRACE, `${new Date().toISOString()} pid=${process.pid} ${msg}\n`);
+  } catch (e) {
+    /* never throw from a hook */
+  }
+}
 
 export interface QuerySessionReuseOptions {
   enabled: boolean;
@@ -155,9 +177,78 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
     if (!options.enabled) return false;
     if (st.resumes >= options.maxResumesPerQuery) return false;
     if (st.estTokens >= options.estTokenCap) return false;
-    if (unit.inFlight.has(st.taskID)) return false;
+    // Precise concurrency guard: only block while the job is genuinely
+    // STILL RUNNING. A completed session is never "running", so sequential
+    // resumes always pass. (The local inFlight set failed here: task calls
+    // spawn asynchronously and tool.execute.after never fires, so the set
+    // never cleared and every resume after the first was blocked.)
+    const board = options.backgroundJobBoard as unknown as {
+      isRunning?: (taskID: string) => boolean;
+    };
+    if (typeof board.isRunning === 'function' && board.isRunning(st.taskID)) {
+      return false;
+    }
     return true;
   }
+
+async function beforeLogic(
+  input: { tool: string; sessionID?: string; callID?: string },
+  output: { args?: unknown },
+): Promise<void> {
+  trace(`[before] entry tool=${input.tool} sessionID=${input.sessionID ?? 'UNDEFINED'} enabled=${options.enabled}`);
+  if (!options.enabled) return;
+  if (input.tool.toLowerCase() !== 'task') return;
+  if (!input.sessionID) return;
+  if (!isObjectRecord(output.args)) return;
+
+  const args = output.args as { subagent_type?: unknown; task_id?: unknown; prompt?: unknown };
+  if (typeof args.subagent_type !== 'string' || args.subagent_type.trim() === '') return;
+  // Respect an explicit task_id from the model — it knows what it wants.
+  if (typeof args.task_id === 'string' && args.task_id.trim() !== '') return;
+
+  const agentType = args.subagent_type.trim();
+  if (!options.agents.includes(agentType)) return;
+
+  const board = options.backgroundJobBoard;
+  if (!board || typeof board.list !== 'function') return;
+
+  const unit = getUnit(input.sessionID);
+
+  // On-the-fly promotion: the board is the source of truth. The
+  // transform-hook promotion can race the job-completion signal, so if
+  // the unit has no state for this agent yet — or the job changed —
+  // resolve it HERE at call time (excluding pre-unit jobs).
+  const job = findCompletedJob(board, input.sessionID, agentType, unit.createdAt);
+  trace(`[before] agent=${agentType} job=${job ? job.taskID : 'NONE'} unitCreated=${unit.createdAt} now=${Date.now()}`);
+  if (!job) return; // no completed session yet → fresh session
+
+  let st = unit.agents.get(agentType);
+  if (!st || st.taskID !== job.taskID) {
+    st = { taskID: job.taskID, resumes: 0, estTokens: seedTokensFromJob(job) };
+    unit.agents.set(agentType, st);
+  }
+
+  if (!canReuse(unit, st)) {
+    trace(`[before] canReuse=false resumes=${st.resumes}/${options.maxResumesPerQuery} estTokens=${st.estTokens}/${options.estTokenCap} inFlight=${unit.inFlight.has(st.taskID)}`);
+    return;
+  }
+
+  args.task_id = st.taskID;
+  st.resumes += 1;
+  unit.inFlight.add(st.taskID);
+  if (input.callID) injectedCalls.set(input.callID, st.taskID);
+  if (typeof args.prompt === 'string') {
+    st.estTokens += estimateTokens(args.prompt);
+  }
+  trace(`[before] INJECTED task_id=${st.taskID} readback=${args.task_id} resumes=${st.resumes}`);
+  log('[query-session-reuse] auto-resumed session', {
+    sessionID: input.sessionID,
+    agentType,
+    taskID: st.taskID,
+    resumes: st.resumes,
+    estTokens: st.estTokens,
+  });
+}
 
   return {
     /** Reset the work unit for a session (used by /fresh, unit detection, session deletion). */
@@ -166,59 +257,18 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
     /**
      * tool.execute.before on `task`: auto-inject the remembered task_id
      * when the subagent is allowlisted and a completed session exists that
-     * is not already in flight.
+     * is not already in flight. Wrapped in try/catch so a hook failure can
+     * never break the task tool itself.
      */
     'tool.execute.before': async (
       input: { tool: string; sessionID?: string; callID?: string },
       output: { args?: unknown },
     ): Promise<void> => {
-      if (!options.enabled) return;
-      if (input.tool.toLowerCase() !== 'task') return;
-      if (!input.sessionID) return;
-      if (!isObjectRecord(output.args)) return;
-
-      const args = output.args as { subagent_type?: unknown; task_id?: unknown; prompt?: unknown };
-      if (typeof args.subagent_type !== 'string' || args.subagent_type.trim() === '') return;
-      // Respect an explicit task_id from the model — it knows what it wants.
-      if (typeof args.task_id === 'string' && args.task_id.trim() !== '') return;
-
-      const agentType = args.subagent_type.trim();
-      if (!options.agents.includes(agentType)) return;
-
-      const board = options.backgroundJobBoard;
-      if (!board || typeof board.list !== 'function') return;
-
-      const unit = getUnit(input.sessionID);
-
-      // On-the-fly promotion: the board is the source of truth. The
-      // transform-hook promotion can race the job-completion signal, so if
-      // the unit has no state for this agent yet — or the job changed —
-      // resolve it HERE at call time (excluding pre-unit jobs).
-      const job = findCompletedJob(board, input.sessionID, agentType, unit.createdAt);
-      if (!job) return; // no completed session yet → fresh session
-
-      let st = unit.agents.get(agentType);
-      if (!st || st.taskID !== job.taskID) {
-        st = { taskID: job.taskID, resumes: 0, estTokens: seedTokensFromJob(job) };
-        unit.agents.set(agentType, st);
+      try {
+        await beforeLogic(input, output);
+      } catch (e) {
+        trace(`[before] EXCEPTION tool=${input.tool} sessionID=${input.sessionID ?? '?'} err=${e instanceof Error ? e.message : String(e)} stack=${e instanceof Error ? (e.stack ?? '').slice(0, 300) : ''}`);
       }
-
-      if (!canReuse(unit, st)) return;
-
-      args.task_id = st.taskID;
-      st.resumes += 1;
-      unit.inFlight.add(st.taskID);
-      if (input.callID) injectedCalls.set(input.callID, st.taskID);
-      if (typeof args.prompt === 'string') {
-        st.estTokens += estimateTokens(args.prompt);
-      }
-      log('[query-session-reuse] auto-resumed session', {
-        sessionID: input.sessionID,
-        agentType,
-        taskID: st.taskID,
-        resumes: st.resumes,
-        estTokens: st.estTokens,
-      });
     },
 
     /**
@@ -287,6 +337,7 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
         if (userMsgId) {
           const unit = workUnits.get(sessionID);
           if (!unit || unit.lastUserMsgId !== userMsgId) {
+            trace(`[transform] NEW USER MSG session=${sessionID} msg=${userMsgId} — reset`);
             // New user message → new work unit.
             resetUnit(sessionID);
             const fresh = getUnit(sessionID);
@@ -300,6 +351,7 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
       const board = options.backgroundJobBoard;
       if (!board || typeof board.list !== 'function') return;
       const unit = workUnits.get(sessionID);
+      trace(`[transform] session=${sessionID} unitExists=${!!unit}`);
       if (!unit) return;
       for (const agentType of options.agents) {
         const job = findCompletedJob(board, sessionID, agentType, unit.createdAt);
@@ -311,6 +363,7 @@ export function createQuerySessionReuseHook(options: QuerySessionReuseOptions) {
             resumes: 0,
             estTokens: seedTokensFromJob(job),
           });
+          trace(`[transform] PROMOTED session=${sessionID} agent=${agentType} job=${job.taskID}`);
         }
       }
     },
