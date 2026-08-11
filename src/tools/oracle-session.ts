@@ -256,6 +256,19 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
               lastUsedAt: Date.now(),
             };
             sessionsByParent.set(parentID, st);
+            // Auto-title the oracle session so it is identifiable in the
+            // session list (parent session short id keeps queries distinct).
+            try {
+              const short = (parentID ?? '').replace(/^ses_/, '').slice(0, 6);
+              await options.client.session
+                .update({
+                  path: { id: created.data.id },
+                  body: { title: `Oracle${short ? ` (${short})` : ''}` },
+                })
+                .catch(() => {});
+            } catch {
+              /* best-effort titling */
+            }
           }
 
           st.lastUsedAt = Date.now();
