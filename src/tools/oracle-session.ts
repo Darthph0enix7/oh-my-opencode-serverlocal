@@ -9,16 +9,29 @@
  * This works in EVERY environment (server + CLI) because it never relies
  * on the task tool's task_id resume semantics or on tool.execute hooks.
  *
- * Lifecycle:
- * - First call for a session: creates a fresh oracle subagent session.
- * - Subsequent calls WITHOUT session_id: reuse the same session (the oracle
- *   accumulates the conversation and remembers its prior verdicts).
- * - Calls WITH session_id (returned by the tool): resume that exact session
- *   (explicit continuation handle — the id is a real session id).
- * - A new call WITHOUT session_id that starts a fresh unit deletes the old
- *   oracle session first (bounded: at most one tracked oracle session per
- *   parent session; the tool never leaks sessions).
- * - Safety rails: max prompts per unit, estimated token cap.
+ * Lifecycle (self-contained — no external hooks required):
+ * - The tool detects the work unit itself: it reads the invoking session's
+ *   message list and remembers the LAST USER MESSAGE id it saw. When that id
+ *   changes, the user has sent a new query → the old oracle session is
+ *   deleted and a fresh one is created. This works on every device even
+ *   where opencode's messages.transform hook never fires (openchamber
+ *   server) — the tool is the one that always runs.
+ * - The new-query check runs FIRST, before any session_id handling: an
+ *   explicit session_id from a PREVIOUS query is rejected (stale sessions
+ *   would leak state across queries or 404 if already deleted). Only a
+ *   session_id matching the CURRENT unit's tracked session is honored.
+ * - Calls WITH session_id (returned by the tool) within the same query:
+ *   resume that exact session (explicit continuation handle).
+ * - Concurrency: all state resolution for one parent session is serialized
+ *   with a per-parent mutex — concurrent calls in one turn can never create
+ *   two sessions or prompt the same session in parallel (history corruption).
+ * - Safety rails: max prompts per unit, estimated token cap, plus a TTL
+ *   sweep that deletes tracked sessions of abandoned parent sessions.
+ *
+ * Verified API semantics (opencode 1.18.15, MessageV2.page):
+ *   GET /session/{id}/message?limit=N returns the NEWEST N messages in
+ *   ascending (chronological) order (DB desc + items.reverse()). Scanning
+ *   the tail of that page finds the most recent user message correctly.
  */
 
 import type { ToolContext } from '@opencode-ai/plugin';
@@ -31,19 +44,64 @@ export interface OracleSessionToolOptions {
   maxPromptsPerUnit?: number;
   /** Estimated token cap for one session chain. */
   estTokenCap?: number;
+  /** How many trailing parent-session messages to scan for the last user message. */
+  scanLimit?: number;
+  /** Idle time after which a tracked parent session is swept (ms). */
+  ttlMs?: number;
 }
 
 interface OracleSessionState {
   sessionId: string;
   prompts: number;
   estTokens: number;
+  /** id of the last USER message in the parent session when this unit began. */
+  lastUserMsgId: string | null;
+  lastUsedAt: number;
+}
+
+/**
+ * Find the id of the last user message in the parent session. Returns null
+ * when the parent session has no user messages or the lookup fails (in which
+ * case callers degrade to reuse, never to a spurious reset).
+ */
+async function getLastUserMessageId(
+  client: OpencodeClient,
+  parentID: string,
+  limit: number,
+): Promise<string | null> {
+  try {
+    const res = await client.session.messages({
+      path: { id: parentID },
+      query: { limit },
+    });
+    if (res.error || !res.data) return null;
+    const messages = res.data as Array<{
+      info?: { id?: string; role?: string };
+    }>;
+    // Newest-first in the DB, reversed to ascending by the server; the tail
+    // of the page is the most recent message. Scan backwards for the last
+    // USER message (tool-call/result messages are role=assistant).
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const info = messages[i]?.info;
+      if (info && info.role === 'user' && typeof info.id === 'string') {
+        return info.id;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function createOracleSessionTool(options: OracleSessionToolOptions) {
   const maxPrompts = options.maxPromptsPerUnit ?? 10;
   const tokenCap = options.estTokenCap ?? 50_000;
+  const scanLimit = options.scanLimit ?? 100;
+  const ttlMs = options.ttlMs ?? 30 * 60_000;
   /** parentSessionID → active oracle session state */
   const sessionsByParent = new Map<string, OracleSessionState>();
+  /** parentSessionID → mutex chain serializing state resolution per parent */
+  const locks = new Map<string, Promise<void>>();
 
   async function cleanupSession(parentSessionID: string): Promise<void> {
     const st = sessionsByParent.get(parentSessionID);
@@ -56,6 +114,41 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
     } catch {
       /* best-effort cleanup */
     }
+  }
+
+  /** Delete tracked sessions of parent sessions idle longer than the TTL. */
+  function sweepStale(): void {
+    const now = Date.now();
+    for (const [pid, st] of sessionsByParent) {
+      if (now - st.lastUsedAt > ttlMs) {
+        sessionsByParent.delete(pid);
+        try {
+          void options.client.session
+            .delete({ path: { id: st.sessionId } })
+            .catch(() => {});
+        } catch {
+          /* best-effort */
+        }
+      }
+    }
+  }
+
+  /** Serialize per-parent state resolution + prompts (no concurrent creates
+   *  or parallel prompts on the same oracle session). */
+  async function withParentLock<T>(
+    parentID: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
+    const prev = locks.get(parentID) ?? Promise.resolve();
+    const run = prev.then(fn, fn);
+    locks.set(
+      parentID,
+      run.then(
+        () => undefined,
+        () => undefined,
+      ),
+    );
+    return run;
   }
 
   function estimateTokens(text: string): number {
@@ -84,8 +177,9 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
           .optional()
           .describe(
             'Optional. Pass the session_id returned by a previous oracle_session call to ' +
-              'explicitly continue that same conversation. Omit to auto-resume the active ' +
-              'oracle session for this task, or to start a fresh one.',
+              'continue that same conversation. Only honored within the current user query — ' +
+              'the session resets automatically on your next message. Omit to auto-resume ' +
+              'the active oracle session for this query, or to start a fresh one.',
           ),
       },
       async execute(
@@ -99,62 +193,103 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
             ? args.session_id
             : undefined;
 
-        let st = sessionsByParent.get(parentID);
+        return withParentLock(parentID, async () => {
+          sweepStale();
 
-        // Explicit continuation: adopt the given session id.
-        if (explicitSessionId) {
-          if (!st || st.sessionId !== explicitSessionId) {
-            st = { sessionId: explicitSessionId, prompts: 0, estTokens: 0 };
-            sessionsByParent.set(parentID, st);
-          }
-        } else if (st) {
-          // Auto-continuation within a unit — enforce safety rails.
-          if (st.prompts >= maxPrompts || st.estTokens >= tokenCap) {
+          // ── Work-unit detection: what is the user's current query? ──────
+          // If we cannot read the parent's messages, currentUserMsgId is null
+          // and we degrade to reuse (never a spurious reset).
+          const currentUserMsgId = await getLastUserMessageId(
+            options.client,
+            parentID,
+            scanLimit,
+          );
+
+          let st = sessionsByParent.get(parentID);
+
+          // ── NEW QUERY DETECTION runs FIRST (even for explicit ids) ──────
+          // The user sent a new message since this unit began → the old
+          // oracle session belongs to the previous query: delete it and
+          // start fresh. Without this, sessions leak across queries until
+          // the safety rails fire or the process restarted.
+          if (
+            currentUserMsgId !== null &&
+            st !== undefined &&
+            st.lastUserMsgId !== currentUserMsgId
+          ) {
             await cleanupSession(parentID);
             st = undefined;
           }
-        }
 
-        if (!st) {
-          // Fresh unit: drop any stale tracked session, then create.
-          await cleanupSession(parentID);
-          const created = await options.client.session.create({
-            query: { directory: context.directory },
-          });
-          if (created.error) {
-            return `Oracle session error: ${JSON.stringify(created.error)}`;
+          if (explicitSessionId !== undefined) {
+            // Honored ONLY when it matches the current unit's tracked session.
+            // A stale/foreign id (previous query, or already deleted) is
+            // rejected — adopting it would leak state or 404 on prompt.
+            if (st !== undefined && st.sessionId === explicitSessionId) {
+              st.lastUserMsgId = currentUserMsgId;
+            } else {
+              await cleanupSession(parentID);
+              st = undefined;
+            }
+          } else if (st !== undefined) {
+            // Auto-continuation within a unit — enforce safety rails.
+            if (st.prompts >= maxPrompts || st.estTokens >= tokenCap) {
+              await cleanupSession(parentID);
+              st = undefined;
+            }
           }
-          st = { sessionId: created.data.id, prompts: 0, estTokens: 0 };
-          sessionsByParent.set(parentID, st);
-        }
 
-        const resp = await options.client.session.prompt({
-          path: { id: st.sessionId },
-          body: {
-            agent: 'oracle',
-            parts: [{ type: 'text', text: promptText }],
-          },
-        });
+          if (st === undefined) {
+            // Fresh unit: drop any stale tracked session, then create.
+            await cleanupSession(parentID);
+            const created = await options.client.session.create({
+              query: { directory: context.directory },
+            });
+            if (created.error) {
+              return `Oracle session error: ${JSON.stringify(created.error)}`;
+            }
+            st = {
+              sessionId: created.data.id,
+              prompts: 0,
+              estTokens: 0,
+              lastUserMsgId: currentUserMsgId,
+              lastUsedAt: Date.now(),
+            };
+            sessionsByParent.set(parentID, st);
+          }
 
-        st.prompts += 1;
-        st.estTokens += estimateTokens(promptText);
+          st.lastUsedAt = Date.now();
 
-        if (resp.error) {
-          return `Oracle error: ${JSON.stringify(resp.error)}`;
-        }
-        if (resp.data.info.error) {
-          return `Oracle error: ${resp.data.info.error.name}`;
-        }
+          const resp = await options.client.session.prompt({
+            path: { id: st.sessionId },
+            body: {
+              agent: 'oracle',
+              parts: [{ type: 'text', text: promptText }],
+            },
+          });
 
-        const text = (resp.data.parts as Array<{ type: string; text?: string }>)
-          .filter((p) => p.type === 'text')
-          .map((p) => p.text ?? '')
-          .join('');
+          st.prompts += 1;
+          st.estTokens += estimateTokens(promptText);
 
-        return JSON.stringify({
-          response: text,
-          session_id: st.sessionId,
-          prompts: st.prompts,
+          if (resp.error) {
+            return `Oracle error: ${JSON.stringify(resp.error)}`;
+          }
+          if (resp.data.info.error) {
+            return `Oracle error: ${resp.data.info.error.name}`;
+          }
+
+          const text = (
+            resp.data.parts as Array<{ type: string; text?: string }>
+          )
+            .filter((p) => p.type === 'text')
+            .map((p) => p.text ?? '')
+            .join('');
+
+          return JSON.stringify({
+            response: text,
+            session_id: st.sessionId,
+            prompts: st.prompts,
+          });
         });
       },
     },
