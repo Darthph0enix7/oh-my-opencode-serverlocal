@@ -27,14 +27,14 @@ export function createObserverAgent(
   );
 
   return {
-    name: 'observer',
-    displayName: 'Observer',
-    description:
-      'Visual analysis, UI mockup translation, and screenshot evaluation',
+  name: 'observer',
+  displayName: 'Observer',
+  description: 'Visual analysis, UI mockup translation, and screenshot evaluation',
+    mode: 'subagent',
+    prompt,
     config: {
       model,
       temperature: 0.1,
-      prompt,
     },
   };
 }

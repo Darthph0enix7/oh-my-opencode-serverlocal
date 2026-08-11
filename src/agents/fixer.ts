@@ -29,14 +29,14 @@ export function createFixerAgent(
   );
 
   return {
-    name: 'fixer',
-    displayName: 'Fixer',
-    description:
-      'Bounded implementation, parallel execution, and localized bug detection',
+  name: 'fixer',
+  displayName: 'Fixer',
+  description: 'Bounded implementation, parallel execution, and localized bug detection',
+    mode: 'subagent',
+    prompt,
     config: {
       model,
       temperature: 0.1,
-      prompt,
     },
   };
 }

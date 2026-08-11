@@ -4,6 +4,9 @@ export interface AgentDefinition {
   name: string;
   displayName?: string;
   description?: string;
+  mode?: 'primary' | 'subagent' | 'all';
+  prompt?: string;
+  tools?: Record<string, 'allow' | 'deny' | 'ask'>;
   config: AgentConfig;
   _modelArray?: Array<{ id: string; variant?: string }>;
 }
@@ -136,11 +139,11 @@ export function createOrchestratorAgent(
 
   const definition: AgentDefinition = {
     name: 'orchestrator',
-    description:
-      'Master Orchestrator. Operates autonomously by default. Uses Tiers 1-3 when asked. Conducts interviews for vague tasks.',
+    description: 'Master Orchestrator. Operates autonomously by default. Uses Tiers 1-3 when asked. Conducts interviews for vague tasks.',
+    mode: 'primary',
+    prompt,
     config: {
       temperature: 0.1,
-      prompt,
     },
   };
 

@@ -27,14 +27,14 @@ export function createExplorerAgent(
   );
 
   return {
-    name: 'explorer',
-    displayName: 'Explorer',
-    description:
-      'Sophisticated codebase mapping, pattern finding, and context compression',
+  name: 'explorer',
+  displayName: 'Explorer',
+  description: 'Sophisticated codebase mapping, pattern finding, and context compression',
+    mode: 'subagent',
+    prompt,
     config: {
       model,
       temperature: 0.1,
-      prompt,
     },
   };
 }

@@ -28,14 +28,14 @@ export function createDesignerAgent(
   );
 
   return {
-    name: 'designer',
-    displayName: 'Designer',
-    description:
-      'UI/UX perfection, responsive layouts, design systems, and visual polish',
+  name: 'designer',
+  displayName: 'Designer',
+  description: 'UI/UX perfection, responsive layouts, design systems, and visual polish',
+    mode: 'subagent',
+    prompt,
     config: {
       model,
       temperature: 0.3,
-      prompt,
     },
   };
 }

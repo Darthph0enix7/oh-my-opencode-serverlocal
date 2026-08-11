@@ -27,14 +27,14 @@ export function createLibrarianAgent(
   );
 
   return {
-    name: 'librarian',
-    displayName: 'Librarian',
-    description:
-      'Exhaustive external knowledge, web research, and API documentation',
+  name: 'librarian',
+  displayName: 'Librarian',
+  description: 'Exhaustive external knowledge, web research, and API documentation',
+    mode: 'subagent',
+    prompt,
     config: {
       model,
       temperature: 0.1,
-      prompt,
     },
   };
 }

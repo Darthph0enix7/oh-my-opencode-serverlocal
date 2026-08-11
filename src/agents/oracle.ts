@@ -34,14 +34,14 @@ export function createOracleAgent(
   );
 
   return {
-    name: 'oracle',
-    displayName: 'Oracle',
-    description:
-      'Senior supervisor, architecture, deep debugging, and rigorous review',
+  name: 'oracle',
+  displayName: 'Oracle',
+  description: 'Senior supervisor, architecture, deep debugging, and rigorous review',
+    mode: 'subagent',
+    prompt,
     config: {
       model,
       temperature: 0.1,
-      prompt,
     },
   };
 }
