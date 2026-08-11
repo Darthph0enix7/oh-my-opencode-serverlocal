@@ -56,7 +56,9 @@
                             "type": "string"
                           }
                         },
-                        "required": ["id"]
+                        "required": [
+                          "id"
+                        ]
                       }
                     ]
                   }
@@ -106,7 +108,11 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "enum": ["ask", "allow", "deny"]
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
                 },
                 {
                   "type": "object",
@@ -115,7 +121,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -124,7 +134,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -133,7 +147,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -142,7 +160,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -151,7 +173,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -160,7 +186,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -169,7 +199,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -178,7 +212,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -187,7 +225,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -196,7 +238,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -205,7 +251,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -214,7 +264,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -223,7 +277,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -232,7 +290,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -241,7 +303,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -250,7 +316,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -259,7 +329,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -268,7 +342,11 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
@@ -277,7 +355,11 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         },
                         {
                           "type": "object",
@@ -286,41 +368,73 @@
                           },
                           "additionalProperties": {
                             "type": "string",
-                            "enum": ["ask", "allow", "deny"]
+                            "enum": [
+                              "ask",
+                              "allow",
+                              "deny"
+                            ]
                           }
                         }
                       ]
                     },
                     "todowrite": {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     },
                     "question": {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     },
                     "webfetch": {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     },
                     "websearch": {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     },
                     "codesearch": {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     },
                     "doom_loop": {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     }
                   },
                   "additionalProperties": {
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -329,7 +443,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -373,7 +491,9 @@
                           "type": "string"
                         }
                       },
-                      "required": ["id"]
+                      "required": [
+                        "id"
+                      ]
                     }
                   ]
                 }
@@ -423,7 +543,11 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["ask", "allow", "deny"]
+                "enum": [
+                  "ask",
+                  "allow",
+                  "deny"
+                ]
               },
               {
                 "type": "object",
@@ -432,7 +556,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -441,7 +569,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -450,7 +582,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -459,7 +595,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -468,7 +608,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -477,7 +621,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -486,7 +634,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -495,7 +647,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -504,7 +660,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -513,7 +673,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -522,7 +686,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -531,7 +699,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -540,7 +712,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -549,7 +725,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -558,7 +738,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -567,7 +751,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -576,7 +764,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -585,7 +777,11 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
@@ -594,7 +790,11 @@
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       },
                       {
                         "type": "object",
@@ -603,41 +803,73 @@
                         },
                         "additionalProperties": {
                           "type": "string",
-                          "enum": ["ask", "allow", "deny"]
+                          "enum": [
+                            "ask",
+                            "allow",
+                            "deny"
+                          ]
                         }
                       }
                     ]
                   },
                   "todowrite": {
                     "type": "string",
-                    "enum": ["ask", "allow", "deny"]
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
                   },
                   "question": {
                     "type": "string",
-                    "enum": ["ask", "allow", "deny"]
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
                   },
                   "webfetch": {
                     "type": "string",
-                    "enum": ["ask", "allow", "deny"]
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
                   },
                   "websearch": {
                     "type": "string",
-                    "enum": ["ask", "allow", "deny"]
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
                   },
                   "codesearch": {
                     "type": "string",
-                    "enum": ["ask", "allow", "deny"]
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
                   },
                   "doom_loop": {
                     "type": "string",
-                    "enum": ["ask", "allow", "deny"]
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
                   }
                 },
                 "additionalProperties": {
                   "anyOf": [
                     {
                       "type": "string",
-                      "enum": ["ask", "allow", "deny"]
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
                     },
                     {
                       "type": "object",
@@ -646,7 +878,11 @@
                       },
                       "additionalProperties": {
                         "type": "string",
-                        "enum": ["ask", "allow", "deny"]
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
                       }
                     }
                   ]
@@ -668,7 +904,10 @@
     "image_routing": {
       "description": "How image attachments are handled. When omitted, preserves legacy conditional behavior: intercept attachments only when observer is enabled. \"auto\": requires observer to be enabled and saves attachments to disk before nudging delegation to @observer. \"direct\": always passes attachments to the orchestrator untouched.",
       "type": "string",
-      "enum": ["auto", "direct"]
+      "enum": [
+        "auto",
+        "direct"
+      ]
     },
     "disabled_mcps": {
       "description": "MCP server names to disable completely. Disabled servers are not started and cannot be used by agents.",
@@ -697,7 +936,14 @@
         "type": {
           "default": "none",
           "type": "string",
-          "enum": ["auto", "tmux", "zellij", "herdr", "cmux", "none"]
+          "enum": [
+            "auto",
+            "tmux",
+            "zellij",
+            "herdr",
+            "cmux",
+            "none"
+          ]
         },
         "layout": {
           "default": "main-vertical",
@@ -719,7 +965,10 @@
         "zellij_pane_mode": {
           "default": "agent-tab",
           "type": "string",
-          "enum": ["agent-tab", "current-tab"]
+          "enum": [
+            "agent-tab",
+            "current-tab"
+          ]
         }
       }
     },
@@ -755,7 +1004,10 @@
         "provider": {
           "default": "exa",
           "type": "string",
-          "enum": ["exa", "tavily"]
+          "enum": [
+            "exa",
+            "tavily"
+          ]
         }
       }
     },
@@ -862,21 +1114,35 @@
         },
         "position": {
           "type": "string",
-          "enum": ["bottom-right", "bottom-left", "top-right", "top-left"]
+          "enum": [
+            "bottom-right",
+            "bottom-left",
+            "top-right",
+            "top-left"
+          ]
         },
         "size": {
           "type": "string",
-          "enum": ["small", "medium", "large"]
+          "enum": [
+            "small",
+            "medium",
+            "large"
+          ]
         },
         "gifPack": {
           "description": "Bundled companion animation pack to use.",
           "type": "string",
-          "enum": ["default"]
+          "enum": [
+            "default"
+          ]
         },
         "loopStyle": {
           "description": "Companion animation playback style: classic loops or smooth ping-pong playback.",
           "type": "string",
-          "enum": ["classic", "smooth"]
+          "enum": [
+            "classic",
+            "smooth"
+          ]
         },
         "speed": {
           "description": "Companion animation playback speed multiplier. Defaults to 1.",
@@ -949,10 +1215,16 @@
           "permissionMode": {
             "default": "ask",
             "type": "string",
-            "enum": ["ask", "allow", "reject"]
+            "enum": [
+              "ask",
+              "allow",
+              "reject"
+            ]
           }
         },
-        "required": ["command"],
+        "required": [
+          "command"
+        ],
         "additionalProperties": false
       }
     }
