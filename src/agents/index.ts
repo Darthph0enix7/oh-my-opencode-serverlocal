@@ -301,6 +301,10 @@ function applyDefaultPermissions(
     ...existing,
     question: questionPerm,
     cancel_task: cancelTaskPerm,
+    // Self-delegation: the oracle must never see or call the oracle_session
+    // tool (recursion guard is call-time; this hides it from the oracle's
+    // tool surface entirely). Every other agent may keep using it.
+    ...(agent.name === 'oracle' ? { oracle_session: 'deny' } : {}),
     external_directory: {
       ...(typeof existing.external_directory === 'object'
         ? existing.external_directory
