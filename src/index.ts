@@ -56,6 +56,7 @@ import {
   createAcpRunTool,
   createCancelTaskTool,
   createOracleSessionTool,
+  isOracleSession,
   createPresetManager,
   createWebfetchTool,
 } from './tools';
@@ -1046,6 +1047,26 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
         input as never,
         output as never,
       );
+      // Self-delegation guard: no agent may dispatch ITSELF (recursion
+      // guard). Oracle sessions are tracked directly; other agents cannot
+      // spawn themselves because their own sessions are never tracked as
+      // spawners. Cross-agent delegation (oracle → explorer, etc.) is fine.
+      const args = output?.args as Record<string, unknown> | undefined;
+      const subagentType =
+        typeof args?.subagent_type === 'string'
+          ? args.subagent_type
+          : undefined;
+      if (
+        input.tool.toLowerCase() === 'task' &&
+        subagentType === 'oracle' &&
+        isOracleSession(input.sessionID)
+      ) {
+        throw new Error(
+          'BLOCKED: an oracle session cannot dispatch another oracle agent ' +
+            '(self-delegation guard). Delegate to other agents (explorer, ' +
+            'librarian, fixer) or finish your review instead.',
+        );
+      }
     },
 
     'command.execute.before': async (input, output) => {

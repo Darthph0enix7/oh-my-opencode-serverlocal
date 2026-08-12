@@ -2,7 +2,7 @@
 export { createAcpRunTool } from './acp-run';
 export { ast_grep_replace, ast_grep_search } from './ast-grep';
 export { createCancelTaskTool } from './cancel-task';
-export { createOracleSessionTool } from './oracle-session';
+export { createOracleSessionTool, isOracleSession } from './oracle-session';
 export type { PresetManager } from './preset-manager';
 export { createPresetManager } from './preset-manager';
 export { createWebfetchTool } from './smartfetch';

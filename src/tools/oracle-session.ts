@@ -59,6 +59,26 @@ interface OracleSessionState {
   lastUsedAt: number;
 }
 
+/** Module-level registry of every oracle-session id across all tool instances. */
+const oracleSessionRegistries = new Set<Set<string>>();
+
+/** Register the per-instance set of created oracle session ids. */
+export function registerOracleSessionIds(ids: Set<string>): void {
+  oracleSessionRegistries.add(ids);
+}
+
+/**
+ * True when the given session is one of the oracle sessions this plugin
+ * created. Used by the recursion guards (oracle_session tool + task tool).
+ */
+export function isOracleSession(sessionID: string | undefined): boolean {
+  if (sessionID === undefined) return false;
+  for (const ids of oracleSessionRegistries) {
+    if (ids.has(sessionID)) return true;
+  }
+  return false;
+}
+
 /**
  * Find the id of the last user message in the parent session. Returns null
  * when the parent session has no user messages or the lookup fails (in which
@@ -102,11 +122,15 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
   const sessionsByParent = new Map<string, OracleSessionState>();
   /** parentSessionID → mutex chain serializing state resolution per parent */
   const locks = new Map<string, Promise<void>>();
+  /** ids of every oracle session this tool has created — the recursion guard */
+  const oracleSessionIds = new Set<string>();
+  registerOracleSessionIds(oracleSessionIds);
 
   async function cleanupSession(parentSessionID: string): Promise<void> {
     const st = sessionsByParent.get(parentSessionID);
     if (!st) return;
     sessionsByParent.delete(parentSessionID);
+    oracleSessionIds.delete(st.sessionId);
     try {
       await options.client.session
         .delete({ path: { id: st.sessionId } })
@@ -187,6 +211,15 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
         context: ToolContext,
       ): Promise<string> {
         const parentID = context.sessionID;
+        // Recursion guard: an oracle session must never spawn another oracle.
+        if (parentID !== undefined && oracleSessionIds.has(parentID)) {
+          return (
+            'BLOCKED: an oracle session cannot call oracle_session again ' +
+            '(recursion guard). You are the oracle — review and advise; the ' +
+            'orchestrator handles further oracle consultations. Continue your ' +
+            'current review instead.'
+          );
+        }
         const promptText = typeof args.prompt === 'string' ? args.prompt : '';
         const explicitSessionId =
           typeof args.session_id === 'string' && args.session_id.trim() !== ''
@@ -256,6 +289,7 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
               lastUsedAt: Date.now(),
             };
             sessionsByParent.set(parentID, st);
+            oracleSessionIds.add(created.data.id);
             // Auto-title the oracle session so it is identifiable in the
             // session list (parent session short id keeps queries distinct).
             try {
