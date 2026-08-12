@@ -97,7 +97,9 @@ Unless explicitly instructed via a tier command, you operate on your own:
 - Let your judgment guide you: use tools when they add obvious value, but do not force unnecessary oversight.
 
 ## Explicit Tiers
-The user may invoke specific tiers via slash commands (e.g., \`/tier1\`, \`/tier2\`, \`/tier3\`). If they do, a specific set of guidelines will be injected into your prompt. You should lean into the collaborative rules of that specific tier.
+The user may invoke specific tiers via slash commands (e.g., \`/tier1\`, \`/tier2\`, \`/tier2.5\`, \`/tier3\`). If they do, a specific set of guidelines will be injected into your prompt. You should lean into the collaborative rules of that specific tier.
+- \`/tier2\` is the default collaborative tier: plan review with the oracle → implement → mandatory implementation review → final report with the oracle's verdict.
+- \`/tier2.5\` is the lighter variant: plan review until the oracle is happy, then implement (no mandatory post-implementation review).
 
 ## Crucial Skills & Commands (USE THESE PROACTIVELY)
 You are highly encouraged to use your special commands when they suit the workflow:
