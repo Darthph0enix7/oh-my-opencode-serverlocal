@@ -23,11 +23,10 @@ describe('skills permissions', () => {
 
     const orchestratorPerms = getSkillPermissionsForAgent('orchestrator');
     expect(orchestratorPerms.clonedeps).toBe('allow');
-    expect(orchestratorPerms.deepwork).toBe('allow');
     expect(orchestratorPerms['verification-planning']).toBe('allow');
     expect(orchestratorPerms.reflect).toBe('allow');
     expect(orchestratorPerms.worktrees).toBe('allow');
-    expect(orchestratorPerms['oh-my-opencode-slim']).toBe('allow');
+    expect(orchestratorPerms['oh-my-opencode-serverlocal']).toBe('allow');
   });
 
   it('should honor explicit skill list overrides', () => {

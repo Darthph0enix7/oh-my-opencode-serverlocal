@@ -116,8 +116,8 @@ mock.module('./background-subagents', () => {
     ...actualBackgroundSubagents,
     isBackgroundSubagentsEnabled: (env?: string) =>
       enableInstallMocks ? true : originalIsBackgroundSubagentsEnabled(env),
-    detectBackgroundSubagentsTarget: () =>
-      enableInstallMocks ? '/path' : originalDetectBackgroundSubagentsTarget(),
+    detectBackgroundSubagentsTarget: (env?: NodeJS.ProcessEnv) =>
+      enableInstallMocks ? '/path' : originalDetectBackgroundSubagentsTarget(env),
     expandHomePath: (p: string) =>
       enableInstallMocks ? p : originalExpandHomePath(p),
     getBackgroundSubagentsBlock: (target: string) =>

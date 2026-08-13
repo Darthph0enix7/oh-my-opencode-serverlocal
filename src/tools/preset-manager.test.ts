@@ -224,7 +224,7 @@ describe('createPresetManager', () => {
       fs.mkdirSync(configDir, { recursive: true });
       process.env.OPENCODE_CONFIG_DIR = configDir;
 
-      const configPath = path.join(configDir, 'oh-my-opencode-slim.jsonc');
+      const configPath = path.join(configDir, 'oh-my-opencode-serverlocal.jsonc');
       fs.writeFileSync(
         configPath,
         `{

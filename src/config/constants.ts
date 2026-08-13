@@ -84,7 +84,7 @@ export const STABLE_POLLS_THRESHOLD = 3;
 
 /** Agents that are disabled by default. Users must explicitly enable them
  *  by removing from disabled_agents and configuring an appropriate model. */
-export const DEFAULT_DISABLED_AGENTS: string[] = ['observer'];
+export const DEFAULT_DISABLED_AGENTS: string[] = [];
 
 // Background job defaults
 export const DEFAULT_MAX_SESSIONS_PER_AGENT = 2;

@@ -371,8 +371,7 @@ export const PluginConfigSchema = z
       .describe(
         'Agent names to disable completely. ' +
           'Disabled agents are not instantiated and cannot be delegated to. ' +
-          'Orchestrator cannot be disabled. ' +
-          "By default, 'observer' is disabled. Remove it from this list and configure a vision-capable model to enable.",
+          'Orchestrator cannot be disabled.',
       ),
     image_routing: z
       .enum(['auto', 'direct'])

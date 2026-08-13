@@ -336,7 +336,7 @@ describe('syncBundledSkillsFromPackage', () => {
 
     const manifestPath = path.join(
       fakeDestConfigDir,
-      '.oh-my-opencode-slim',
+      '.oh-my-opencode-serverlocal',
       'skills-manifest.json',
     );
     expect(fs.existsSync(manifestPath)).toBe(true);
@@ -361,7 +361,7 @@ describe('syncBundledSkillsFromPackage', () => {
       '# Current Bundled Skill',
     );
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -442,7 +442,7 @@ describe('syncBundledSkillsFromPackage', () => {
       '# Existing Dest Original',
     );
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
     fs.writeFileSync(manifestPath, '{ corrupt json here');
@@ -470,7 +470,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Current');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -504,7 +504,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Bundled Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -551,7 +551,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Bundle Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -603,7 +603,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Bundle Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -682,7 +682,7 @@ describe('syncBundledSkillsFromPackage', () => {
       '# Existing Dest Original',
     );
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -720,7 +720,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Identical Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -774,7 +774,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const lockDir = path.join(manifestDir, 'skills.lock');
     fs.mkdirSync(lockDir, { recursive: true });
@@ -802,7 +802,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const lockDir = path.join(manifestDir, 'skills.lock');
     fs.mkdirSync(lockDir, { recursive: true });
@@ -830,7 +830,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const lockDir = path.join(manifestDir, 'skills.lock');
     fs.mkdirSync(lockDir, { recursive: true });
@@ -858,7 +858,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const lockDir = path.join(manifestDir, 'skills.lock');
     fs.mkdirSync(lockDir, { recursive: true });
@@ -886,7 +886,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Managed Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -981,7 +981,7 @@ describe('syncBundledSkillsFromPackage', () => {
       '# Current Bundled Content',
     );
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -1102,7 +1102,7 @@ describe('syncBundledSkillsFromPackage', () => {
       '# Customized Content',
     );
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
     // Write corrupt manifest content
@@ -1173,7 +1173,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Identical Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -1316,7 +1316,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Source');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 
@@ -1375,7 +1375,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(backupDir, { recursive: true });
     fs.writeFileSync(path.join(backupDir, 'SKILL.md'), '# Backup Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
     const initialManifest = {
@@ -1427,7 +1427,7 @@ describe('syncBundledSkillsFromPackage', () => {
 
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Updated');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
     fs.writeFileSync(
@@ -1476,7 +1476,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(path.join(destSkillDir, 'user-empty-dir'));
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Updated');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     fs.writeFileSync(
       path.join(manifestDir, 'skills-manifest.json'),
@@ -1525,7 +1525,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.chmodSync(destSkillFile, 0o600);
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Updated');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     fs.writeFileSync(
       path.join(manifestDir, 'skills-manifest.json'),
@@ -1565,7 +1565,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(backupDir, { recursive: true });
     fs.writeFileSync(path.join(backupDir, 'SKILL.md'), '# Backup Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
     const initialManifest = {
@@ -1617,7 +1617,7 @@ describe('syncBundledSkillsFromPackage', () => {
     fs.mkdirSync(skillSrcDir, { recursive: true });
     fs.writeFileSync(path.join(skillSrcDir, 'SKILL.md'), '# Bundle Content');
 
-    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-slim');
+    const manifestDir = path.join(fakeDestConfigDir, '.oh-my-opencode-serverlocal');
     fs.mkdirSync(manifestDir, { recursive: true });
     const manifestPath = path.join(manifestDir, 'skills-manifest.json');
 

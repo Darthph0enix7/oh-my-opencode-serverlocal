@@ -42,7 +42,7 @@ describe('tui sidebar agents', () => {
 
     expect(agentNames).toContain('explorer');
     expect(agentNames).toContain('fixer');
-    expect(agentNames).not.toContain('observer');
+    expect(agentNames).toContain('observer');
     expect(agentNames).not.toContain('council');
     expect(agentNames).not.toContain('councillor');
   });
@@ -94,7 +94,7 @@ describe('readConfigInvalid', () => {
       const configDir = path.join(projectDir, '.opencode');
       fs.mkdirSync(configDir, { recursive: true });
       fs.writeFileSync(
-        path.join(configDir, 'oh-my-opencode-slim.json'),
+        path.join(configDir, 'oh-my-opencode-serverlocal.json'),
         JSON.stringify({ agents: { oracle: { temperature: 5 } } }),
       );
 
@@ -111,7 +111,7 @@ describe('readConfigInvalid', () => {
       const configDir = path.join(projectDir, '.opencode');
       fs.mkdirSync(configDir, { recursive: true });
       fs.writeFileSync(
-        path.join(configDir, 'oh-my-opencode-slim.json'),
+        path.join(configDir, 'oh-my-opencode-serverlocal.json'),
         JSON.stringify({ agents: { oracle: { model: 'valid/model' } } }),
       );
 
@@ -140,7 +140,7 @@ describe('readConfigInvalid', () => {
       const configDir = path.join(projectDir, '.opencode');
       fs.mkdirSync(configDir, { recursive: true });
       fs.writeFileSync(
-        path.join(configDir, 'oh-my-opencode-slim.json'),
+        path.join(configDir, 'oh-my-opencode-serverlocal.json'),
         JSON.stringify({ compactSidebar: false }),
       );
 
