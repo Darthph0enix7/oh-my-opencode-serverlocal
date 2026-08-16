@@ -37,6 +37,78 @@
 import type { ToolContext } from '@opencode-ai/plugin';
 import type { OpencodeClient } from '@opencode-ai/sdk';
 import { z } from 'zod';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+
+/**
+ * Persisted registry of oracle sessions. Without this, the in-memory
+ * sessionsByParent map dies with the server process: after a restart the old
+ * oracle session becomes an untracked orphan (never deleted) and the next
+ * call creates a fresh one — the exact leak observed in the field (96 leaked
+ * sessions). Persisting lets cleanup survive restarts: the next tool call
+ * for a parent loads the previous entry, detects the new query, and deletes
+ * the orphan before creating the replacement.
+ */
+const REGISTRY_DIR = 'oh-my-opencode-serverlocal';
+const REGISTRY_FILE = 'oracle-sessions.json';
+
+interface PersistedOracleSession {
+  /** id of the oracle session this parent was using. */
+  sessionId: string;
+  /** id of the last USER message in the parent at creation/resume time. */
+  lastUserMsgId: string | null;
+  /** last time this parent used the oracle (epoch ms). */
+  lastUsedAt: number;
+}
+
+function dataDir(): string {
+  return (
+    process.env.XDG_DATA_HOME ?? path.join(os.homedir(), '.local', 'share')
+  );
+}
+
+export function getOracleSessionsPath(): string {
+  return path.join(dataDir(), 'opencode', 'storage', REGISTRY_DIR, REGISTRY_FILE);
+}
+
+function resolveRegistryPath(override?: string): string {
+  return override ?? getOracleSessionsPath();
+}
+
+function loadPersistedRegistry(pathOverride?: string): Map<string, PersistedOracleSession> {
+  const map = new Map<string, PersistedOracleSession>();
+  try {
+    const raw = fs.readFileSync(resolveRegistryPath(pathOverride), 'utf8');
+    const parsed = JSON.parse(raw) as Record<string, PersistedOracleSession>;
+    for (const [parentID, entry] of Object.entries(parsed)) {
+      if (
+        typeof parentID === 'string' &&
+        entry &&
+        typeof entry.sessionId === 'string'
+      ) {
+        map.set(parentID, entry);
+      }
+    }
+  } catch {
+    /* missing/corrupt file — start empty */
+  }
+  return map;
+}
+
+function savePersistedRegistry(
+  map: Map<string, PersistedOracleSession>,
+  pathOverride?: string,
+): void {
+  try {
+    const p = resolveRegistryPath(pathOverride);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, JSON.stringify(Object.fromEntries(map), null, 2));
+  } catch {
+    /* best-effort persistence */
+  }
+}
+
 
 export interface OracleSessionToolOptions {
   client: OpencodeClient;
@@ -48,6 +120,8 @@ export interface OracleSessionToolOptions {
   scanLimit?: number;
   /** Idle time after which a tracked parent session is swept (ms). */
   ttlMs?: number;
+  /** Override the persisted-registry file path (tests). */
+  registryPath?: string;
 }
 
 interface OracleSessionState {
@@ -118,26 +192,56 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
   const tokenCap = options.estTokenCap ?? 50_000;
   const scanLimit = options.scanLimit ?? 100;
   const ttlMs = options.ttlMs ?? 30 * 60_000;
-  /** parentSessionID → active oracle session state */
+  /** parentSessionID → active oracle session state (in-memory, current process). */
   const sessionsByParent = new Map<string, OracleSessionState>();
+  /**
+   * parentSessionID → persisted state (survives restarts). Loaded once at
+   * tool creation so a restarted server can still find and delete the
+   * oracle session its predecessor created for this parent.
+   */
+  const persistedByParent = loadPersistedRegistry(options.registryPath);
   /** parentSessionID → mutex chain serializing state resolution per parent */
   const locks = new Map<string, Promise<void>>();
   /** ids of every oracle session this tool has created — the recursion guard */
   const oracleSessionIds = new Set<string>();
   registerOracleSessionIds(oracleSessionIds);
 
-  async function cleanupSession(parentSessionID: string): Promise<void> {
-    const st = sessionsByParent.get(parentSessionID);
-    if (!st) return;
-    sessionsByParent.delete(parentSessionID);
-    oracleSessionIds.delete(st.sessionId);
+  /** Persist the registry after any mutation. */
+  function persist(): void {
+    const merged = new Map(persistedByParent);
+    for (const [pid, st] of sessionsByParent) {
+      merged.set(pid, {
+        sessionId: st.sessionId,
+        lastUserMsgId: st.lastUserMsgId,
+        lastUsedAt: st.lastUsedAt,
+      });
+    }
+    savePersistedRegistry(merged, options.registryPath);
+  }
+
+  async function deleteSessionById(sessionId: string): Promise<void> {
     try {
       await options.client.session
-        .delete({ path: { id: st.sessionId } })
+        .delete({ path: { id: sessionId } })
         .catch(() => {});
     } catch {
       /* best-effort cleanup */
     }
+  }
+
+  async function cleanupSession(parentSessionID: string): Promise<void> {
+    const st = sessionsByParent.get(parentSessionID);
+    const persisted = persistedByParent.get(parentSessionID);
+    sessionsByParent.delete(parentSessionID);
+    persistedByParent.delete(parentSessionID);
+    if (st) oracleSessionIds.delete(st.sessionId);
+    if (st?.sessionId) await deleteSessionById(st.sessionId);
+    if (persisted && persisted.sessionId !== st?.sessionId) {
+      // Cross-restart cleanup: the persisted session belongs to a previous
+      // server process — delete the orphan too.
+      await deleteSessionById(persisted.sessionId);
+    }
+    persist();
   }
 
   /** Delete tracked sessions of parent sessions idle longer than the TTL. */
@@ -146,15 +250,18 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
     for (const [pid, st] of sessionsByParent) {
       if (now - st.lastUsedAt > ttlMs) {
         sessionsByParent.delete(pid);
-        try {
-          void options.client.session
-            .delete({ path: { id: st.sessionId } })
-            .catch(() => {});
-        } catch {
-          /* best-effort */
-        }
+        persistedByParent.delete(pid);
+        void deleteSessionById(st.sessionId);
       }
     }
+    // Also sweep persisted entries of parents that never called back.
+    for (const [pid, entry] of persistedByParent) {
+      if (now - entry.lastUsedAt > ttlMs) {
+        persistedByParent.delete(pid);
+        void deleteSessionById(entry.sessionId);
+      }
+    }
+    persist();
   }
 
   /** Serialize per-parent state resolution + prompts (no concurrent creates
@@ -240,6 +347,27 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
 
           let st = sessionsByParent.get(parentID);
 
+          // ── CROSS-RESTART HYDRATION ────────────────────────────────────
+          // This server process has no in-memory state for this parent, but
+          // a previous process may have created an oracle session for it.
+          // Load it so the new-query check can delete the orphan instead of
+          // letting it leak.
+          if (st === undefined) {
+            const persisted = persistedByParent.get(parentID);
+            if (persisted) {
+              st = {
+                sessionId: persisted.sessionId,
+                prompts: 0,
+                estTokens: 0,
+                lastUserMsgId: persisted.lastUserMsgId,
+                lastUsedAt: persisted.lastUsedAt,
+              };
+              // Remember it in-process too (recursion guard + tracking).
+              oracleSessionIds.add(persisted.sessionId);
+              sessionsByParent.set(parentID, st);
+            }
+          }
+
           // ── NEW QUERY DETECTION runs FIRST (even for explicit ids) ──────
           // The user sent a new message since this unit began → the old
           // oracle session belongs to the previous query: delete it and
@@ -290,6 +418,12 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
             };
             sessionsByParent.set(parentID, st);
             oracleSessionIds.add(created.data.id);
+            persistedByParent.set(parentID, {
+              sessionId: created.data.id,
+              lastUserMsgId: currentUserMsgId,
+              lastUsedAt: Date.now(),
+            });
+            persist();
             // Auto-title the oracle session so it is identifiable in the
             // session list (parent session short id keeps queries distinct).
             try {
@@ -306,6 +440,12 @@ export function createOracleSessionTool(options: OracleSessionToolOptions) {
           }
 
           st.lastUsedAt = Date.now();
+          persistedByParent.set(parentID, {
+            sessionId: st.sessionId,
+            lastUserMsgId: st.lastUserMsgId,
+            lastUsedAt: st.lastUsedAt,
+          });
+          persist();
 
           const resp = await options.client.session.prompt({
             path: { id: st.sessionId },
